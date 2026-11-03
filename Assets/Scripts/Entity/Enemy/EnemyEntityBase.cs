@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 // FIXME: 移動させる
 public enum ItemType
@@ -36,22 +38,39 @@ public struct EnemyEntityData
 {
     // 敵種別
     public EnemyEntityType type;
-    // ドロップ報酬
-    public ItemEntityData[] drops;
+    // HP
+    public int hitPoint;
+    // 攻撃力
+    public int attack;
     // 移動速度
     public float speed;
+    // ドロップ報酬
+    public ItemEntityData[] drops;
 
-    public EnemyEntityData(EnemyEntityType type, ItemEntityData[] drops, float speed)
+    public EnemyEntityData(
+        EnemyEntityType type,
+        int hitPoint, 
+        int attack, 
+        float speed,
+        ItemEntityData[] drops)
     {
         this.type = type;
-        this.drops = drops;
+        this.hitPoint = hitPoint;
+        this.attack = attack;
         this.speed = speed;
+        this.drops = drops;
     }
 }
 
 public class EnemyEntityBase : GameEntityBase
 {
     protected EnemyEntityData _enemyData;
+    public EnemyEntityData EnemyData {
+        get
+        {
+            return _enemyData;
+        }
+    }
 
     protected Vector2Int mapPos;
 
@@ -73,6 +92,10 @@ public class EnemyEntityBase : GameEntityBase
     // 敵が撃破された時
     public event Action<ItemEntityData[]> onDefeated;
 
+    private Coroutine damageCoroutine;
+
+    private SpriteRenderer spriteRenderer;
+
     private float _totalMoveDistance = 0.0f;
     public float totalMoveDistance
     {
@@ -83,16 +106,16 @@ public class EnemyEntityBase : GameEntityBase
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    protected new void Start()
+    protected void Start()
     {
-        base.Start();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     protected void Update()
     {
         // HPが0以下なら自身を破棄する
-        if(_entityData.hitPoint <= 0.0f)
+        if(_enemyData.hitPoint <= 0.0f)
         {
             onDefeated?.Invoke(_enemyData.drops);
             Destroy(gameObject);
@@ -117,7 +140,7 @@ public class EnemyEntityBase : GameEntityBase
             Vector3 nextPosition = transform.position + distanceVector3;
             SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
             // 現在位置のMapから移動した場合
-            LayerMask layerMask = LayerMask.GetMask("Map"); // FIXME: どこかでenumにしたい
+            LayerMask layerMask = LayerMask.GetMask("FieldGrid"); // FIXME: どこかでenumにしたい
             Collider2D collider2D = Physics2D.OverlapPoint(nextPosition, layerMask);
             if(collider2D != null)
             {
@@ -155,14 +178,42 @@ public class EnemyEntityBase : GameEntityBase
         }
     }
 
-    public new void TakeDamage(int damage)
+    public void TakeDamage(int damage)
     {
-        base.TakeDamage(damage);
+        _enemyData.hitPoint -= damage;
+
+        if(damageCoroutine != null)
+        {
+            StopCoroutine(damageCoroutine);
+        }
+        damageCoroutine = StartCoroutine(DamageEffect());
         AudioManager.Instance.PlaySE(SEAudioType.ENEMY_DAMAGE);
     }
 
     public void SetMapPos(Vector2Int mapPos)
     {
         this.mapPos = mapPos;
+    }
+
+    public static GameEntityPrefabType GetPrefabType(EnemyEntityType type)
+    {
+        return type switch
+        {
+            EnemyEntityType.STANDARD    => GameEntityPrefabType.STANDARD_ENEMY,
+            EnemyEntityType.HEAVYARMOR  => GameEntityPrefabType.HEAVYARMOR_ENEMY,
+            _                           => GameEntityPrefabType.NONE
+        };
+    }
+
+    private IEnumerator DamageEffect()
+    {
+        Color color = spriteRenderer.color;
+        spriteRenderer.color = Color.red;
+
+        yield return new WaitForSeconds(0.1f);
+
+        spriteRenderer.color = color;
+
+        damageCoroutine = null;
     }
 }

@@ -2,14 +2,6 @@ using System;
 using NUnit.Framework;
 using UnityEngine;
 
-public enum FieldGridType
-{
-    NONE = 0,   // 未設定
-    ROAD,       // 道
-    FOREST,     // 森
-    MAX_NUM
-}
-
 public class FieldGrid : MonoBehaviour
 {
     [SerializeField]
@@ -42,15 +34,16 @@ public class FieldGrid : MonoBehaviour
 
     void OnMouseDown()
     {
+        // FIXME: タワー設置が出来ないのに設置済みになってしまう不具合
         // 押下イベントが未登録、種別が道、既に配置済みの場合は何もしない
         if(Clicked == null || FieldGridType == FieldGridType.ROAD || isPlaced) return;
         Debug.Log(name + "(" + FieldGridType + ")" + "が押されたよ！");
-        isPlaced = true;
+        // isPlaced = true;
         Clicked?.Invoke();
     }
 
     // FIXME: 仮置き
-    public void setPlaced()
+    public void SetPlaced()
     {
         isPlaced = true;
     }

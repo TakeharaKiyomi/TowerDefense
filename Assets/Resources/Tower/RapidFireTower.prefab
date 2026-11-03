@@ -105,3 +105,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac333ebaffa5e41839cf771cbd81e39d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RapidFireTower
+  masterData: {fileID: 11400000, guid: dcfa201fc61e240b696d0abbd4b5e164, type: 2}

@@ -119,9 +119,6 @@ public class EnemyManager : MonoBehaviour
 
     private GameObject _enamyParent;
 
-    // 敵のプレハブの実体
-    private Dictionary<EnemyEntityType, GameObject> _enemyPrefabs = new Dictionary<EnemyEntityType, GameObject>();
-
     public event Action<int> OnEnemyGoalAchieved;
     public event Action OnWaveClear;
     public event Action<ItemEntityData[]> onEnemyDefeated;
@@ -181,32 +178,17 @@ public class EnemyManager : MonoBehaviour
                 _waveEnemyIndex = 0;
                 return;
             }
-            // プレハブデータ取得
-            GameObject prefab;
-            EnemyEntityType type = _wave[_waveIndex].enemies[_waveEnemyIndex];
-            if(_enemyPrefabs.ContainsKey(type))
-            {
-                prefab = _enemyPrefabs[type];
-            } else
-            {
-                prefab = (GameObject)Resources.Load(_enemyPrefabStrings[type]);
-                if(prefab == null)
-                {
-                    Debug.Log("指定の敵用プレハブが存在しない。");
-                    return;
-                }
-                // プレハブデータ保存
-                _enemyPrefabs.Add(type, prefab);
-            }
+
             // インスタンス生成
-            GameObject gameObject = Instantiate(prefab);
+            EnemyEntityType type = _wave[_waveIndex].enemies[_waveEnemyIndex];
+            GameObject gameObject = GameEntityBase.CreateEntity(EnemyEntityBase.GetPrefabType(type));
             gameObject.transform.position = MapManager.Instance.GetFieldGridTransformPos(mapPos);
             gameObject.transform.SetParent(_enamyParent.transform, false);
             EnemyEntityBase enemyEntityBase = gameObject.GetComponent<EnemyEntityBase>();
             enemyEntityBase.SetMapPos(mapPos);
             enemyEntityBase.OnGoalAchieved += () =>
             { 
-                OnEnemyGoalAchieved?.Invoke(enemyEntityBase.EntityData.attack);
+                OnEnemyGoalAchieved?.Invoke(enemyEntityBase.EnemyData.attack);
             };
             enemyEntityBase.onDefeated += onEnemyDefeated;
             _waveEnemyIndex +=1;

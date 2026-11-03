@@ -17,6 +17,9 @@ public enum SEAudioType
     BUTTON_CLICK,
     ENEMY_DAMAGE,
     BASE_DAMAGE,
+
+    TOWER_INSTALLATION,
+    
     MAX_NUM
 }
 
@@ -38,6 +41,7 @@ public class AudioManager : MonoBehaviour
     {
         if(Instance != null && Instance != this)
         {
+            Debug.Log("既にAudioManagerは生成されているので破棄します。");
             Destroy(gameObject);
             return;
         }
@@ -115,6 +119,9 @@ public class AudioManager : MonoBehaviour
                 break;
             case SEAudioType.BASE_DAMAGE:
                 audioClipString = "Audio/SE/BaseDamage";
+                break;
+            case SEAudioType.TOWER_INSTALLATION:
+                audioClipString = "Audio/SE/TowerInstallation";
                 break;
             default:
                 return;

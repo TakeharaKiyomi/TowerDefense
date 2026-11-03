@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6446cad9bc814f378fc1c73d5ea0603, type: 3}
+  m_Name: RapidFireTower
+  m_EditorClassIdentifier: Assembly-CSharp::TowerMaster
+  type: 2
+  attack: 1
+  attackInterval: 0.3
+  range: 2
+  velocity: 8
+  moneyCost: 70
+  towerName: "\u9023\u5C04"

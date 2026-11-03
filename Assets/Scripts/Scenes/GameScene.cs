@@ -18,6 +18,8 @@ public class GameScene : MonoBehaviour
     public GameObject hitPointLabel;
     [SerializeField]
     public GameObject moneyLabel;
+    [SerializeField]
+    private List<TowerMaster> towerMasters;
 
     // FIXME: インスペクター上で設定できるようにする方が良いかも
     // 拠点のMap座標
@@ -25,11 +27,11 @@ public class GameScene : MonoBehaviour
 
     private Vector2Int enemyMapInitPos = new Vector2Int(3, 9);
     
-    private Dictionary<string, TowerDisplayData> towerDisplayDatas = new Dictionary<string, TowerDisplayData>
+    /* private Dictionary<TowerEntityType, TowerDisplayData> towerDisplayDatas = new Dictionary<TowerEntityType, TowerDisplayData>
     {
-        { TowerEntityType.STANDARD.ToString(), new TowerDisplayData(50, "標準") },
-        { TowerEntityType.RAPIDFIRE.ToString(), new TowerDisplayData(70, "連射") },
-    };
+        { TowerEntityType.STANDARD, new TowerDisplayData(50, "標準") },
+        { TowerEntityType.RAPIDFIRE, new TowerDisplayData(70, "連射") },
+    }; */
 
     // 最初の更新か否か
     private bool isFirstUpdated = false;
@@ -50,28 +52,29 @@ public class GameScene : MonoBehaviour
 
         // Map情報を生成し、拠点を設定する
         MapManager.Instance.CreateMapData();
-        MapManager.Instance.FieldGridClicked += (pos) => {
+        MapManager.Instance.FieldGridClicked += (fieldGrid) => {
             PlaceTowerButton selectedButton = PlaceTowerButton.SelectedButton;
             if(selectedButton == null) return; 
-            TowerDisplayData towerDisplayData = towerDisplayDatas[selectedButton.TowerType];
-            if(towerDisplayData.moneyCost <= _money)
+            TowerMaster towerMaster = towerMasters.Find(item => item.type == selectedButton.TowerType);
+            if(towerMaster.moneyCost <= _money)
             {
-                _money -= towerDisplayData.moneyCost;
+                _money -= towerMaster.moneyCost;
 
                 GameObject towerGameObject;
-                TowerEntityType type = (TowerEntityType)Enum.Parse(typeof(TowerEntityType), selectedButton.TowerType);
-                switch(type)
+                switch(selectedButton.TowerType)
                 {
                     case TowerEntityType.STANDARD:
-                        towerGameObject = StandardTower.CreateEntity();
+                        towerGameObject = GameEntityBase.CreateEntity(GameEntityPrefabType.STANDARD_TOWER);
                         break;
                     case TowerEntityType.RAPIDFIRE:
-                        towerGameObject = RapidFireTower.CreateEntity();
+                        towerGameObject = GameEntityBase.CreateEntity(GameEntityPrefabType.RAPIDFIRE_TOWER);
                         break;
                     default:
                         return;
                 }
-                towerGameObject.transform.position = pos;
+                towerGameObject.transform.position = fieldGrid.gameObject.transform.position;
+                fieldGrid.SetPlaced();
+                AudioManager.Instance.PlaySE(SEAudioType.TOWER_INSTALLATION);
             }
         };
         GameObject basePrefab = (GameObject)Resources.Load("Base/base");
@@ -115,12 +118,12 @@ public class GameScene : MonoBehaviour
         // UI
         GameObject buttonPrefab = (GameObject)Resources.Load("UI/Button/PlaceTowerButton");
         float posX = 0.0f;
-        foreach(var item in towerDisplayDatas)
+        foreach(var item in towerMasters)
         {
             GameObject buttonObj = Instantiate(buttonPrefab);
             buttonObj.name = buttonPrefab.name;
             PlaceTowerButton buttonScript = buttonObj.GetComponent<PlaceTowerButton>();
-            buttonScript.SetTowerEntityData(item.Key, item.Value);
+            buttonScript.SetTextAndType(item);
             buttonObj.transform.SetParent(canvas.transform, false);
             // FIXME: 設計上の見直し必要
             RectTransform rect = buttonObj.GetComponent<RectTransform>();
@@ -139,11 +142,11 @@ public class GameScene : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!isFirstUpdated && PlaceTowerButton.SelectedButton != null)
+        /* if(!isFirstUpdated && PlaceTowerButton.SelectedButton != null)
         {
             MapManager.Instance.SetupClicked();
             isFirstUpdated = true;
-        }
+        } */
 
         // UI
         TextMeshProUGUI waveLabelScript = waveLabel.GetComponent<TextMeshProUGUI>();

@@ -13,8 +13,8 @@ public class PlaceTowerButton : MonoBehaviour
             return _selectedButton;
         }
     }
-    private string _towerType;
-    public string TowerType
+    private TowerEntityType _towerType;
+    public TowerEntityType TowerType
     {
         get
         {
@@ -51,10 +51,10 @@ public class PlaceTowerButton : MonoBehaviour
         button.interactable = !isSelected;
     }
 
-    public void SetTowerEntityData(string type, TowerDisplayData towerData)
+    public void SetTextAndType(TowerMaster towerMaster)
     {
         TextMeshProUGUI textMP = GetComponentInChildren<TextMeshProUGUI>();
-        textMP.text = towerData.moneyCost + "G : " + towerData.towerName;
-        _towerType = type;
+        textMP.text = towerMaster.moneyCost + "G : " + towerMaster.towerName;
+        _towerType = towerMaster.type;
     }
 }

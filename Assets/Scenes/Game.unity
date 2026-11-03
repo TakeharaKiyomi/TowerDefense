@@ -546,6 +546,9 @@ MonoBehaviour:
   waveLabel: {fileID: 1101030701}
   hitPointLabel: {fileID: 2028960814}
   moneyLabel: {fileID: 664218646}
+  towerMasters:
+  - {fileID: 11400000, guid: 5daa7dfc3b2d84bacb91caf2dcd37227, type: 2}
+  - {fileID: 11400000, guid: dcfa201fc61e240b696d0abbd4b5e164, type: 2}
 --- !u!114 &519420035
 MonoBehaviour:
   m_ObjectHideFlags: 0

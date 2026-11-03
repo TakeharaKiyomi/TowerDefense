@@ -1,16 +1,17 @@
 using UnityEngine;
 
-public class HeavyArmorEnemy : EnemyEntityBase
+public class StandardEnemy : EnemyEntityBase
 {
     void Awake()
     {
-        _entityData = new GameEntityBaseData(15, 2, 0, 0, 0);
         _enemyData = new EnemyEntityData(
             EnemyEntityType.STANDARD,
-            new ItemEntityData[] { new ItemEntityData(ItemType.GOLD, 20) }, 
-            0.75f);
-    }
+            5,
+            1, 
+            1.5f,
+            new ItemEntityData[] { new ItemEntityData(ItemType.GOLD, 10) });
 
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private new void Start()
     {
