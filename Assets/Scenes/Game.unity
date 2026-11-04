@@ -561,6 +561,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6ca2c9f5f3bd401d8dd8c4178cf4c11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
+  _wave:
+  - {fileID: 11400000, guid: b6f768aa4854f41f69ef1b5a49aa8e1a, type: 2}
+  - {fileID: 11400000, guid: 7824a32e87297413cb6de5c16ba632a1, type: 2}
+  - {fileID: 11400000, guid: 8ab8c783a1d93441f9e370a3b38cc196, type: 2}
+  - {fileID: 11400000, guid: cc19da54126cf4d289a4f2f9a516f1bf, type: 2}
+  - {fileID: 11400000, guid: 55b82836643354a77aa935b8c98a440f, type: 2}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0

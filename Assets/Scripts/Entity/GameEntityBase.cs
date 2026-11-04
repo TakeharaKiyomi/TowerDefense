@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class GameEntityBase : MonoBehaviour {
+public abstract class GameEntityBase : MonoBehaviour {
 
     private readonly static Dictionary<GameEntityPrefabType, GameObject> prefabs = new ();
 
@@ -10,7 +10,7 @@ public class GameEntityBase : MonoBehaviour {
     /// </summary>
     /// <param name="type">プレハブ種別</param>
     /// <returns>生成されたインスタンス</returns>
-    public static GameObject CreateEntity(GameEntityPrefabType type)
+    protected static T CreateEntity<T>(GameEntityPrefabType type) where T : GameEntityBase
     {
         // プレハブ取得
         GameObject prefab;
@@ -32,6 +32,6 @@ public class GameEntityBase : MonoBehaviour {
         // インスタンス生成
         GameObject entity = Instantiate(prefab);
         entity.name = prefab.name;
-        return entity;
+        return entity.GetComponent<T>();
     }
 }

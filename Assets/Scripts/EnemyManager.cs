@@ -2,108 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct EnamyWaveData
-{
-    // エネミー情報
-    public EnemyEntityType[] enemies;
-    // 出現間隔
-    public float interval;
-    public EnamyWaveData(EnemyEntityType[] enemies, float interval)
-    {
-        this.enemies = enemies;
-        this.interval = interval;
-    }
-}
-
 public class EnemyManager : MonoBehaviour
 {
-    // マップのプレハブの名前
-    private Dictionary<EnemyEntityType, string> _enemyPrefabStrings = new Dictionary<EnemyEntityType, string>
-    {
-        {EnemyEntityType.STANDARD, "Enemy/StandardEnemy"},
-        {EnemyEntityType.HEAVYARMOR, "Enemy/HeavyArmorEnemy"},
-    };
-
-    private EnamyWaveData[] _wave = new EnamyWaveData[]
-    {
-        new EnamyWaveData(
-            new EnemyEntityType[] {
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-            }, 
-            1.5f
-        ),
-        new EnamyWaveData(
-            new EnemyEntityType[] {
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-            }, 
-            1.3f
-        ),
-        new EnamyWaveData(
-            new EnemyEntityType[] {
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-            }, 
-            1.2f
-        ),
-        new EnamyWaveData(
-            new EnemyEntityType[] {
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-            }, 
-            1.0f
-        ),
-        new EnamyWaveData(
-            new EnemyEntityType[] {
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.HEAVYARMOR,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-                EnemyEntityType.STANDARD,
-            }, 
-            0.9f
-        ),
-    };
+    [SerializeField]
+    private EnemyWaveMaster[] _wave;
 
     private float _timer = 0.0f;
 
@@ -121,7 +23,7 @@ public class EnemyManager : MonoBehaviour
 
     public event Action<int> OnEnemyGoalAchieved;
     public event Action OnWaveClear;
-    public event Action<ItemEntityData[]> onEnemyDefeated;
+    public event Action<DropItemBaseMaster[]> OnEnemyDefeated;
 
     // シングルトン
     private static EnemyManager _instance;
@@ -181,16 +83,20 @@ public class EnemyManager : MonoBehaviour
 
             // インスタンス生成
             EnemyEntityType type = _wave[_waveIndex].enemies[_waveEnemyIndex];
-            GameObject gameObject = GameEntityBase.CreateEntity(EnemyEntityBase.GetPrefabType(type));
-            gameObject.transform.position = MapManager.Instance.GetFieldGridTransformPos(mapPos);
-            gameObject.transform.SetParent(_enamyParent.transform, false);
-            EnemyEntityBase enemyEntityBase = gameObject.GetComponent<EnemyEntityBase>();
-            enemyEntityBase.SetMapPos(mapPos);
-            enemyEntityBase.OnGoalAchieved += () =>
-            { 
-                OnEnemyGoalAchieved?.Invoke(enemyEntityBase.EnemyData.attack);
+            EnemyEntityBase enemyScript = type switch
+            {
+                EnemyEntityType.STANDARD    => StandardEnemy.CreateEntity(),
+                EnemyEntityType.HEAVYARMOR  => HeavyArmorEnemy.CreateEntity(),
+                _                           => StandardEnemy.CreateEntity()
             };
-            enemyEntityBase.onDefeated += onEnemyDefeated;
+            enemyScript.transform.position = MapManager.Instance.GetFieldGridTransformPos(mapPos);
+            enemyScript.transform.SetParent(_enamyParent.transform, false);
+            enemyScript.SetMapPos(mapPos);
+            enemyScript.OnGoalAchieved += () =>
+            { 
+                OnEnemyGoalAchieved?.Invoke(enemyScript.EnemyMaster.attack);
+            };
+            enemyScript.OnDefeated += OnEnemyDefeated;
             _waveEnemyIndex +=1;
             _timer = 0.0f;
             return;

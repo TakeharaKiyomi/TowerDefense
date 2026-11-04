@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using UnityEngine;
 
-public class FieldGrid : MonoBehaviour
+public class FieldGrid : GameEntityBase
 {
     [SerializeField]
     private FieldGridType _fieldGridType; // マス種別
@@ -46,5 +46,16 @@ public class FieldGrid : MonoBehaviour
     public void SetPlaced()
     {
         isPlaced = true;
+    }
+
+    public static FieldGrid CreateEntity(FieldGridType type)
+    {
+        GameEntityPrefabType prefabType = type switch
+        {
+            FieldGridType.ROAD      => GameEntityPrefabType.FIELD_GRID_ROAD,
+            FieldGridType.FOREST    => GameEntityPrefabType.FIELD_GRID_FOREST,
+            _                       => throw new ArgumentException("FieldGridType(" + type + ")は不正な値です。")
+        };
+        return CreateEntity<FieldGrid>(prefabType);
     }
 }

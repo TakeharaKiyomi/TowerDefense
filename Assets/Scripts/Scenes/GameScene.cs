@@ -26,15 +26,7 @@ public class GameScene : MonoBehaviour
     private Vector2Int baseMapPos = new Vector2Int(0, 3);
 
     private Vector2Int enemyMapInitPos = new Vector2Int(3, 9);
-    
-    /* private Dictionary<TowerEntityType, TowerDisplayData> towerDisplayDatas = new Dictionary<TowerEntityType, TowerDisplayData>
-    {
-        { TowerEntityType.STANDARD, new TowerDisplayData(50, "標準") },
-        { TowerEntityType.RAPIDFIRE, new TowerDisplayData(70, "連射") },
-    }; */
 
-    // 最初の更新か否か
-    private bool isFirstUpdated = false;
     // ゲーム開始か否か
     private bool isGameStart = false;
 
@@ -60,18 +52,12 @@ public class GameScene : MonoBehaviour
             {
                 _money -= towerMaster.moneyCost;
 
-                GameObject towerGameObject;
-                switch(selectedButton.TowerType)
+                TowerEntityBase towerGameObject = selectedButton.TowerType switch
                 {
-                    case TowerEntityType.STANDARD:
-                        towerGameObject = GameEntityBase.CreateEntity(GameEntityPrefabType.STANDARD_TOWER);
-                        break;
-                    case TowerEntityType.RAPIDFIRE:
-                        towerGameObject = GameEntityBase.CreateEntity(GameEntityPrefabType.RAPIDFIRE_TOWER);
-                        break;
-                    default:
-                        return;
-                }
+                    TowerEntityType.STANDARD    => StandardTower.CreateEntity(),
+                    TowerEntityType.RAPIDFIRE   => RapidFireTower.CreateEntity(),
+                    _                           => StandardTower.CreateEntity()
+                };
                 towerGameObject.transform.position = fieldGrid.gameObject.transform.position;
                 fieldGrid.SetPlaced();
                 AudioManager.Instance.PlaySE(SEAudioType.TOWER_INSTALLATION);
@@ -93,25 +79,21 @@ public class GameScene : MonoBehaviour
                 return;
             }
             // HPが足らない場合、ゲームオーバー画面に進む
-            // FIXME: 画面遷移させる
-            Debug.Log("ゲームオーバー画面に進む。");
             SceneManager.LoadScene(SceneNames.gameOver);
         };
         EnemyManager.Instance.OnWaveClear += () =>
         {
-            Debug.Log("ゲームクリア画面に進む。");
             SceneManager.LoadScene(SceneNames.gameClear);
         };
-        EnemyManager.Instance.onEnemyDefeated += (drops) =>
+        EnemyManager.Instance.OnEnemyDefeated += (drops) =>
         {
-            foreach(ItemEntityData drop in drops)
+            foreach(DropItemBaseMaster drop in drops)
             {
-                switch(drop.type)
+                _money += drop switch
                 {
-                    case ItemType.GOLD:
-                        _money += (int)drop.info;
-                        break;
-                }
+                    GoldItemMaster goldItemMaster => goldItemMaster.amount,
+                    _ => 0
+                };
             }
         };
 
@@ -142,12 +124,6 @@ public class GameScene : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /* if(!isFirstUpdated && PlaceTowerButton.SelectedButton != null)
-        {
-            MapManager.Instance.SetupClicked();
-            isFirstUpdated = true;
-        } */
-
         // UI
         TextMeshProUGUI waveLabelScript = waveLabel.GetComponent<TextMeshProUGUI>();
         waveLabelScript.text = "WAVE: " + (EnemyManager.Instance.WaveIndex + 1);
@@ -162,25 +138,4 @@ public class GameScene : MonoBehaviour
         EnemyManager.Instance.CreateEnemyData(enemyMapInitPos);
 
     }
-
-    /* private void CreateTower(Vector3 pos)
-    {
-        // FIXME: 後でタワーマネージャーを作成する
-        GameObject prefab;
-        switch(PlaceTowerButton.SelectedButton.TowerData.type)
-        {
-            case TowerEntityType.STANDARD:
-                prefab = (GameObject)Resources.Load("Tower/StandardTower");
-                break;
-            case TowerEntityType.RAPIDFIRE:
-                prefab = (GameObject)Resources.Load("Tower/RapidFireTower");
-                break;
-            default:
-                // それ以外は何もしない
-                return;
-        }
-        GameObject tower = Instantiate(prefab);
-        tower.name = prefab.name;
-        tower.transform.position = pos;
-    } */
 }

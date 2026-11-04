@@ -17,9 +17,7 @@ public enum SEAudioType
     BUTTON_CLICK,
     ENEMY_DAMAGE,
     BASE_DAMAGE,
-
     TOWER_INSTALLATION,
-    
     MAX_NUM
 }
 
@@ -31,10 +29,11 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     private AudioSource se;
 
-    private Dictionary<BGMAudioType, AudioClip> bgmAudioSources = new Dictionary<BGMAudioType, AudioClip>();
-    private Dictionary<SEAudioType, AudioClip> seAudioSources = new Dictionary<SEAudioType, AudioClip>();
+    private Dictionary<BGMAudioType, AudioClip> bgmAudioSources = new();
+    private Dictionary<SEAudioType, AudioClip> seAudioSources = new();
 
     // シングルトン
+    // FIXME: タイトル画面を経由しないとnullで落ちるので、無くても動作するように修正する
     public static AudioManager Instance { get; private set; }
 
     private void Awake()

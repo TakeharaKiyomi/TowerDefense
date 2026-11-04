@@ -4,12 +4,6 @@ public class StandardEnemy : EnemyEntityBase
 {
     void Awake()
     {
-        _enemyData = new EnemyEntityData(
-            EnemyEntityType.STANDARD,
-            5,
-            1, 
-            1.5f,
-            new ItemEntityData[] { new ItemEntityData(ItemType.GOLD, 10) });
 
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -22,5 +16,10 @@ public class StandardEnemy : EnemyEntityBase
     protected new void Update()
     {
         base.Update();
+    }
+
+    public static StandardEnemy CreateEntity()
+    {
+        return CreateEntity<StandardEnemy>(GameEntityPrefabType.STANDARD_ENEMY);
     }
 }

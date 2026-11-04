@@ -4,12 +4,7 @@ public class HeavyArmorEnemy : EnemyEntityBase
 {
     void Awake()
     {
-        _enemyData = new EnemyEntityData(
-            EnemyEntityType.STANDARD,
-            15,
-            2,
-            0.75f,
-            new ItemEntityData[] { new ItemEntityData(ItemType.GOLD, 20) });
+        
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -22,5 +17,10 @@ public class HeavyArmorEnemy : EnemyEntityBase
     protected new void Update()
     {
         base.Update();
+    }
+
+    public static HeavyArmorEnemy CreateEntity()
+    {
+        return CreateEntity<HeavyArmorEnemy>(GameEntityPrefabType.HEAVYARMOR_ENEMY);
     }
 }

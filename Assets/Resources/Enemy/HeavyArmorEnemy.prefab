@@ -106,6 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5868fb80329bc49548ce93beb735e922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HeavyArmorEnemy
+  _enemyMaster: {fileID: 11400000, guid: 821c7a2ef60ad45f9b36dc0cf879cdb4, type: 2}
 --- !u!61 &-6503673480735467828
 BoxCollider2D:
   m_ObjectHideFlags: 0

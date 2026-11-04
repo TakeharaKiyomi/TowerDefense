@@ -17,7 +17,7 @@ public struct BulletEntityBaseData
     }
 }
 
-public class BulletEntityBase : MonoBehaviour
+public class BulletEntityBase : GameEntityBase
 {
     private BulletEntityBaseData _bulletData;
 
@@ -67,5 +67,10 @@ public class BulletEntityBase : MonoBehaviour
     public void SetBulletEntityBaseData(BulletEntityBaseData bulletData)
     {
         _bulletData = bulletData;
+    }
+
+    public static BulletEntityBase CreateEntity()
+    {
+        return CreateEntity<BulletEntityBase>(GameEntityPrefabType.STANDARD_BULLET);
     }
 }

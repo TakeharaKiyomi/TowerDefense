@@ -39,7 +39,7 @@ public class MapManager : MonoBehaviour {
     public Action<FieldGrid> FieldGridClicked;
 
     // マップ情報
-    private GameObject[,] _mapData = new GameObject[MAX_MAP_Y, MAX_MAP_X];
+    private FieldGrid[,] _mapData = new FieldGrid[MAX_MAP_Y, MAX_MAP_X];
 
     // シングルトン
     private static MapManager _instance;
@@ -79,14 +79,13 @@ public class MapManager : MonoBehaviour {
             {
                 // インスタンス生成
                 FieldGridType type = (FieldGridType)_baseMapData[i, j];
-                _mapData[i, j] = GameEntityBase.CreateEntity(type.GetPrefabType());
-
+                _mapData[i, j] = FieldGrid.CreateEntity(type);
                 spriteRenderer = _mapData[i, j].GetComponent<SpriteRenderer>();
                 _mapData[i, j].transform.position = new Vector3(posX, posY, 0.0f);
-                _mapData[i, j].name += "(" + i + "_" + j + ")";
+                _mapData[i, j].name += "(" + j + "_" + i + ")";
                 posX = _mapData[i, j].transform.position.x + spriteRenderer.size.x;
                 _mapData[i, j].transform.SetParent(_mapParent.transform);
-                FieldGrid fieldGrid = _mapData[i, j].GetComponent<FieldGrid>();
+                FieldGrid fieldGrid = _mapData[i, j];
                 // TODO: 一時的に保持が必要かは要確認
                 // GameObject obj = _mapData[i, j];
                 fieldGrid.Clicked += () => onFieldGridClicked(fieldGrid);
@@ -116,7 +115,7 @@ public class MapManager : MonoBehaviour {
         {
             for(int j = 0; j < _mapData.GetLength(1); j++)
             {
-                if(_mapData[i, j] != fieldGrid.gameObject) continue;
+                if(_mapData[i, j] != fieldGrid) continue;
                 return new Vector2Int(j, i);
             }
         }
@@ -132,15 +131,18 @@ public class MapManager : MonoBehaviour {
         return _mapData[index.y, index.x].transform.position;
     }
 
-    public FieldGrid GetFieldGrid(Vector2Int index)
+    public FieldGrid GetFieldGrid(Vector2Int index = default)
     {
         // FIXME: マス目が存在しないことも判定に含まれているから安易に削除はできない
-        if(
-            index.x < 0 || 
-            index.y < 0 ||
-            MAX_MAP_X <= index.x ||
-            MAX_MAP_Y <= index.y) return null;
+        if(!IsValidIndex(index)) return null;
         return _mapData[index.y, index.x].GetComponent<FieldGrid>();
+    }
+
+    public Vector2 GetFieldGridSize(Vector2Int index = default)
+    {
+        // FIXME: 何をしているか要確認。恐らく元のサイズに自身に掛ける予定のスケールをかけているだけ。
+        SpriteRenderer spriteRenderer = _mapData[index.y, index.x].GetComponent<SpriteRenderer>();
+        return Vector2.Scale(spriteRenderer.sprite.bounds.size, spriteRenderer.transform.lossyScale);
     }
 
     public void SetFieldGridPlaced(Vector2Int index)
@@ -150,18 +152,16 @@ public class MapManager : MonoBehaviour {
         _mapData[index.y, index.x].GetComponent<FieldGrid>().SetPlaced();
     }
 
-    public void SetupClicked()
-    {
-        // FIXME: タワー設置が出来ないのに設置済みになってしまう不具合
-        /* foreach(GameObject gameObject in _mapData)
-        {
-            FieldGrid fieldGrid = gameObject.GetComponent<FieldGrid>();
-            fieldGrid.Clicked += () => onFieldGridClicked(gameObject.transform.position);
-        } */
-    }
-
     private void onFieldGridClicked(FieldGrid fieldGrid)
     {
         FieldGridClicked?.Invoke(fieldGrid);
+    }
+
+    private bool IsValidIndex(Vector2Int index)
+    {
+        return  0 <= index.x && 
+                0 <= index.y &&
+                index.x < MAX_MAP_X &&
+                index.y < MAX_MAP_Y;
     }
 }
