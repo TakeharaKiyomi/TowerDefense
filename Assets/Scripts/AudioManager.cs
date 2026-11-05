@@ -1,144 +1,104 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BGMAudioType
-{
-    NONE = 0,
-    TITLE,
-    GAME,
-    GAME_CLEAR,
-    GAME_OVER,
-    MAX_NUM
-}
-
-public enum SEAudioType
-{
-    NONE = 0,
-    BUTTON_CLICK,
-    ENEMY_DAMAGE,
-    BASE_DAMAGE,
-    TOWER_INSTALLATION,
-    MAX_NUM
-}
-
 public class AudioManager : MonoBehaviour
 {
-    [SerializeField]
-    private AudioSource bgm;
+    // シングルトン（シーンを跨いで唯一無二）
+    private static AudioManager _instance;
+    public static AudioManager Instance
+    {
+        get
+        {
+            // 既にインスタンス生成されている場合、そのまま返却する
+            if(_instance != null) return _instance;
+            // 保持していないだけで既にインスタンス生成されていた場合、保持してそのまま返却する
+            AudioManager audioManager = FindAnyObjectByType<AudioManager>();
+            if(audioManager != null) {
+                _instance = audioManager;
+                return audioManager;
+            }
+            // インスタンスが未生成の場合、初期化して返却する
+            return new GameObject("AudioManager").AddComponent<AudioManager>();
+        }
+    }
 
-    [SerializeField]
-    private AudioSource se;
+    private AudioSource _bgm;
 
-    private Dictionary<BGMAudioType, AudioClip> bgmAudioSources = new();
-    private Dictionary<SEAudioType, AudioClip> seAudioSources = new();
+    private AudioSource _se;
 
-    // シングルトン
-    // FIXME: タイトル画面を経由しないとnullで落ちるので、無くても動作するように修正する
-    public static AudioManager Instance { get; private set; }
+    private readonly Dictionary<BGMAudioType, AudioClip> _bgmAudioSources = new();
+    private readonly Dictionary<SEAudioType, AudioClip> _seAudioSources = new();
 
     private void Awake()
     {
-        if(Instance != null && Instance != this)
+        // 既にインスタンス生成されている場合は、自身を破棄する
+        if(_instance != null)
         {
-            Debug.Log("既にAudioManagerは生成されているので破棄します。");
             Destroy(gameObject);
             return;
         }
-        Instance = this;
-        // シーンを跨いでも自身を保持する
+        // 新規で生成されたインスタンスなので保持する
+        _instance = this;
+        // シーンを跨いでも自身が破棄されないようにする
         DontDestroyOnLoad(gameObject);
+        // BGM
+        GameObject bgmGameObject = new("BGM");
+        _bgm = bgmGameObject.AddComponent<AudioSource>();
+        bgmGameObject.transform.SetParent(gameObject.transform);
+        // SE
+        GameObject seGameObject = new("SE");
+        _se = seGameObject.AddComponent<AudioSource>();
+        seGameObject.transform.SetParent(gameObject.transform);
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+    /// <summary>
+    /// BGMを再生する
+    /// </summary>
+    /// <param name="type">BGMの種別</param>
     public void PlayBGM(BGMAudioType type)
     {
-        string audioClipString;
         AudioClip clip;
-        switch (type)
+        if(_bgmAudioSources.ContainsKey(type))
         {
-            case BGMAudioType.TITLE:
-                bgm.loop = true;
-                audioClipString = "Audio/BGM/Title";
-                break;
-            case BGMAudioType.GAME:
-                bgm.loop = true;
-                audioClipString = "Audio/BGM/Game";
-                break;
-            case BGMAudioType.GAME_CLEAR:
-                bgm.loop = false;
-                audioClipString = "Audio/BGM/GameClear";
-                break;
-            case BGMAudioType.GAME_OVER:
-                bgm.loop = false;
-                audioClipString = "Audio/BGM/GameOver";
-                break;
-            default:
-                return;
+            clip = _bgmAudioSources[type];
         }
-        if(bgmAudioSources.ContainsKey(type))
+        else
         {
-            clip = bgmAudioSources[type];
-        } else
-        {
-            clip = (AudioClip)Resources.Load(audioClipString);
+            clip = (AudioClip)Resources.Load(type.GetAudioClipString());
             if(clip == null)
             {
                 Debug.Log("指定のBGMが存在しない。");
                 return;
             }
             // プレハブデータ保存
-            bgmAudioSources.Add(type, clip);
+            _bgmAudioSources.Add(type, clip);
         }
-        bgm.clip = clip;
-        bgm.Play();
+        _bgm.clip = clip;
+        _bgm.Play();
     }
 
+    /// <summary>
+    /// SEを再生する
+    /// </summary>
+    /// <param name="type">SEの種別</param>
     public void PlaySE(SEAudioType type)
     {
-        string audioClipString;
         AudioClip clip;
-        switch (type)
+        if(_seAudioSources.ContainsKey(type))
         {
-            case SEAudioType.BUTTON_CLICK:
-                audioClipString = "Audio/SE/ButtonClick";
-                break;
-            case SEAudioType.ENEMY_DAMAGE:
-                audioClipString = "Audio/SE/EnemyDamage";
-                break;
-            case SEAudioType.BASE_DAMAGE:
-                audioClipString = "Audio/SE/BaseDamage";
-                break;
-            case SEAudioType.TOWER_INSTALLATION:
-                audioClipString = "Audio/SE/TowerInstallation";
-                break;
-            default:
-                return;
+            clip = _seAudioSources[type];
         }
-        if(seAudioSources.ContainsKey(type))
+        else
         {
-            clip = seAudioSources[type];
-        } else
-        {
-            clip = (AudioClip)Resources.Load(audioClipString);
+            clip = (AudioClip)Resources.Load(type.GetAudioClipString());
             if(clip == null)
             {
                 Debug.Log("指定のSEが存在しない。");
                 return;
             }
             // プレハブデータ保存
-            seAudioSources.Add(type, clip);
+            _seAudioSources.Add(type, clip);
         }
-        se.PlayOneShot(clip);
+        _se.PlayOneShot(clip);
     }
 }

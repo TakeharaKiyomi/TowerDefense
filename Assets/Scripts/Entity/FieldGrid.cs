@@ -1,17 +1,20 @@
 using System;
-using NUnit.Framework;
 using UnityEngine;
 
 public class FieldGrid : GameEntityBase
 {
+    // フィールド単一の種別
     [SerializeField]
-    private FieldGridType _fieldGridType; // マス種別
-    public FieldGridType FieldGridType // FIXME: 大文字で問題ない？
+    private FieldGridType _fieldGridType;
+    public FieldGridType FieldGridType
     {
-        get { return _fieldGridType; }
+        get
+        { 
+            return _fieldGridType;
+        }
     }
     // 配置済みか否か
-    public bool isPlaced = false;
+    private bool isPlaced = false;
 
     public event Action Clicked;
 

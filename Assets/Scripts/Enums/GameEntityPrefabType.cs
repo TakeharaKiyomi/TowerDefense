@@ -26,8 +26,8 @@ public static class GameEntityPrefabTypeExtensions
     {
         return type switch
         {
-            GameEntityPrefabType.FIELD_GRID_ROAD    => "Map/Road",
-            GameEntityPrefabType.FIELD_GRID_FOREST  => "Map/Forest",
+            GameEntityPrefabType.FIELD_GRID_ROAD    => "Field/Road",
+            GameEntityPrefabType.FIELD_GRID_FOREST  => "Field/Forest",
             GameEntityPrefabType.BASE               => "Base/base",
             GameEntityPrefabType.STANDARD_TOWER     => "Tower/StandardTower",
             GameEntityPrefabType.RAPIDFIRE_TOWER    => "Tower/RapidFireTower",

@@ -1,8 +1,7 @@
 using UnityEngine;
-using System;
-using System.Linq;
 using System.Collections.Generic;
 
+// FIXME: タワーを纏めるGameObjectが存在しないから纏めた方が良い
 public abstract class TowerEntityBase : GameEntityBase
 {
     // タワーの情報
@@ -15,7 +14,6 @@ public abstract class TowerEntityBase : GameEntityBase
     // 射程内の敵を一時的に保存するリスト
     private readonly List<EnemyEntityBase> _enemyEntityBasesTemp = new();
 
-    // Update is called once per frame
     protected void Update()
     {
         // 経過時間が攻撃間隔を満たない場合、時間を加算して何もしない
@@ -25,7 +23,7 @@ public abstract class TowerEntityBase : GameEntityBase
             return;
         }
         // 射程範囲内に敵が存在するか確認し、居なければ何もしない
-        Vector2 fieldGridSize = MapManager.Instance.GetFieldGridSize();
+        Vector2 fieldGridSize = FieldManager.Instance.GetFieldGridSize();
         Collider2D[] collider2Ds = Physics2D.OverlapBoxAll(
             transform.position,
             fieldGridSize * masterData.range,
@@ -38,7 +36,7 @@ public abstract class TowerEntityBase : GameEntityBase
         {
             _enemyEntityBasesTemp.Add(item.GetComponent<EnemyEntityBase>());
         }
-        _enemyEntityBasesTemp.Sort((a, b) => b.totalMoveDistance.CompareTo(a.totalMoveDistance));
+        _enemyEntityBasesTemp.Sort((a, b) => b.TotalMoveDistance.CompareTo(a.TotalMoveDistance));
         // 弾をインスタンス生成する
         BulletEntityBase bulletScript = BulletEntityBase.CreateEntity();
         bulletScript.transform.position = transform.position;

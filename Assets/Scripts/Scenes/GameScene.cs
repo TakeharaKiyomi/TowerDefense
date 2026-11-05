@@ -22,10 +22,10 @@ public class GameScene : MonoBehaviour
     private List<TowerMaster> towerMasters;
 
     // FIXME: インスペクター上で設定できるようにする方が良いかも
-    // 拠点のMap座標
-    private Vector2Int baseMapPos = new Vector2Int(0, 3);
+    // 拠点のField座標
+    private Vector2Int _baseFieldPos = new Vector2Int(0, 3);
 
-    private Vector2Int enemyMapInitPos = new Vector2Int(3, 9);
+    private Vector2Int _enemyFieldInitPos = new Vector2Int(3, 9);
 
     // ゲーム開始か否か
     private bool isGameStart = false;
@@ -42,9 +42,9 @@ public class GameScene : MonoBehaviour
     {
         AudioManager.Instance.PlayBGM(BGMAudioType.GAME);
 
-        // Map情報を生成し、拠点を設定する
-        MapManager.Instance.CreateMapData();
-        MapManager.Instance.FieldGridClicked += (fieldGrid) => {
+        // フィールド情報を生成し、拠点を設定する
+        FieldManager.Instance.CreateEntity();
+        FieldManager.Instance.FieldGridClicked += (fieldGrid) => {
             PlaceTowerButton selectedButton = PlaceTowerButton.SelectedButton;
             if(selectedButton == null) return; 
             TowerMaster towerMaster = towerMasters.Find(item => item.type == selectedButton.TowerType);
@@ -66,8 +66,8 @@ public class GameScene : MonoBehaviour
         GameObject basePrefab = (GameObject)Resources.Load("Base/base");
         GameObject baseObj = Instantiate(basePrefab);
         baseObj.name = basePrefab.name;
-        baseObj.transform.position = MapManager.Instance.GetFieldGridTransformPos(baseMapPos);
-        MapManager.Instance.SetFieldGridPlaced(baseMapPos);
+        baseObj.transform.position = FieldManager.Instance.GetFieldGridTransformPos(_baseFieldPos);
+        FieldManager.Instance.SetFieldGridPlaced(_baseFieldPos);
 
         // 敵
         EnemyManager.Instance.OnEnemyGoalAchieved += (attack) =>
@@ -81,7 +81,7 @@ public class GameScene : MonoBehaviour
             // HPが足らない場合、ゲームオーバー画面に進む
             SceneManager.LoadScene(SceneNames.gameOver);
         };
-        EnemyManager.Instance.OnWaveClear += () =>
+        EnemyManager.Instance.OnAllWaveClear += () =>
         {
             SceneManager.LoadScene(SceneNames.gameClear);
         };
@@ -118,6 +118,7 @@ public class GameScene : MonoBehaviour
         startButtonScript.onClick.AddListener(() => {
             isGameStart = true;
             startButtonScript.interactable = false;
+            AudioManager.Instance.PlaySE(SEAudioType.BUTTON_CLICK);
         });
     }
 
@@ -126,7 +127,7 @@ public class GameScene : MonoBehaviour
     {
         // UI
         TextMeshProUGUI waveLabelScript = waveLabel.GetComponent<TextMeshProUGUI>();
-        waveLabelScript.text = "WAVE: " + (EnemyManager.Instance.WaveIndex + 1);
+        waveLabelScript.text = "WAVE: " + (EnemyManager.Instance.WaveNowIndex + 1);
         TextMeshProUGUI hitPointLabelScript = hitPointLabel.GetComponent<TextMeshProUGUI>();
         hitPointLabelScript.text = "拠点HP: " + _hitPoint;
         TextMeshProUGUI moneyLabelScript = moneyLabel.GetComponent<TextMeshProUGUI>();
@@ -135,7 +136,7 @@ public class GameScene : MonoBehaviour
         if(!isGameStart) return;
 
         // 敵生成
-        EnemyManager.Instance.CreateEnemyData(enemyMapInitPos);
+        EnemyManager.Instance.CreateEntity(_enemyFieldInitPos);
 
     }
 }

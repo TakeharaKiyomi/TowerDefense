@@ -42,6 +42,7 @@ public class PlaceTowerButton : MonoBehaviour
         SetSelected(true, this);
         SetSelected(false, _selectedButton);
         _selectedButton = this;
+        AudioManager.Instance.PlaySE(SEAudioType.BUTTON_CLICK);
     }
 
     private void SetSelected(bool isSelected, PlaceTowerButton placeTowerButton)

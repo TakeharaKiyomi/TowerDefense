@@ -17,7 +17,7 @@ public class EnemyEntityBase : GameEntityBase
 
     // 移動距離の合計
     private float _totalMoveDistance = 0.0f;
-    public float totalMoveDistance
+    public float TotalMoveDistance
     {
         get
         {
@@ -25,8 +25,8 @@ public class EnemyEntityBase : GameEntityBase
         }
     }
 
-    // ゴール達成した時
-    public event Action OnGoalAchieved;
+    // ゴールを達成した時
+    public event Action<int> OnGoalAchieved;
 
     // 敵が撃破された時
     public event Action<DropItemBaseMaster[]> OnDefeated;
@@ -37,8 +37,8 @@ public class EnemyEntityBase : GameEntityBase
     // 現在のHP
     private int _hitPoint;
 
-    // マップ上での現在位置
-    protected Vector2Int _mapNowPos;
+    // フィールド上での現在位置
+    protected Vector2Int _fieldNowPos;
 
     // 現在の進行方向
     private Vector2Int[] _directions;
@@ -52,7 +52,6 @@ public class EnemyEntityBase : GameEntityBase
     // ベースの色
     private Color _baseColor;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     protected void Start()
     {
         SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
@@ -61,7 +60,6 @@ public class EnemyEntityBase : GameEntityBase
         _directions = _enemyMaster.directions;
     }
 
-    // Update is called once per frame
     protected void Update()
     {
         // HPが0以下なら自身を破棄する
@@ -75,15 +73,16 @@ public class EnemyEntityBase : GameEntityBase
         Vector3 gameObjectNowPos = transform.position;
         for(int i = 0; i < _directions.Length; i++)
         {
-            Vector2Int nextMapPos = _mapNowPos + _directions[i];
+            // 進行方向のフィールド位置を取得
+            Vector2Int nextDirectionFieldPos = _fieldNowPos + _directions[i];
             // 前回通った道の場合、次の進行方向へ進む
-            if((_mapNowPos - _previousDirection) == nextMapPos) {
+            if((_fieldNowPos - _previousDirection) == nextDirectionFieldPos) {
                 continue;
             }
-            FieldGrid fieldGrid = MapManager.Instance.GetFieldGrid(nextMapPos);
-            // 存在しないMapもしくは道ではない場合、次の進行方向へ進む
-            if(fieldGrid == null || fieldGrid.FieldGridType != FieldGridType.ROAD) continue;
-            Vector2 fieldGridSize = MapManager.Instance.GetFieldGridSize(nextMapPos);
+            FieldGrid nextDirectionFieldGrid = FieldManager.Instance.GetFieldGrid(nextDirectionFieldPos);
+            // 存在しないフィールドもしくは道ではない場合、次の進行方向へ進む
+            if(nextDirectionFieldGrid == null || nextDirectionFieldGrid.FieldGridType != FieldGridType.ROAD) continue;
+            Vector2 fieldGridSize = FieldManager.Instance.GetFieldGridSize();
             // 移動量
             float distance = _enemyMaster.speed * Time.deltaTime * fieldGridSize.x;
             // 移動量に進行方向を掛ける（Y座標の進行方向が負数なので逆の符号で掛ける）
@@ -101,7 +100,7 @@ public class EnemyEntityBase : GameEntityBase
             );
             // 現在位置＋移動量＋半分サイズを加算した位置を判定する次の座標位置として扱う
             Vector3 nextGameObjectPos = transform.position + distanceVector3 + enemyHalfSize;
-            // 次の現在位置のMap情報を取得
+            // 次の現在位置のフィールド情報を取得
             LayerMask layerMask = LayerMaskType.FIELD_GRID.GetLayerMask();
             Collider2D collider2D = Physics2D.OverlapPoint(nextGameObjectPos, layerMask);
             if(collider2D != null)
@@ -113,15 +112,15 @@ public class EnemyEntityBase : GameEntityBase
                 transform.position += distanceVector3;
                 // 移動距離の合計に加算
                 _totalMoveDistance += Math.Abs(distanceVector3.x) + Math.Abs(distanceVector3.y);
-                // 当たっているマップからマップ上の位置情報を取得する
-                Vector2Int? nextPos2 = MapManager.Instance.GetFieldGridPos(nextFieldGrid);
-                if(nextPos2 == null)
+                // 当たっているフィールド部分からフィールド上の位置情報を取得する
+                Vector2Int? nextFieldGridPos = FieldManager.Instance.GetFieldGridPos(nextFieldGrid);
+                if(nextFieldGridPos == null)
                 {
-                    Debug.Log("マップ位置が不明なマップと衝突しています。");
+                    Debug.Log("位置が不明なフィールドと衝突しています。");
                     break;
                 }
-                // マップ位置を設定
-                _mapNowPos = nextPos2.Value;
+                // 現在のフィールド位置を設定
+                _fieldNowPos = nextFieldGridPos.Value;
                 // 現在の進行方向を保存
                 _previousDirection = _directions[i];
                 // 現在の進行方向から順番になるように順番を更新
@@ -133,13 +132,13 @@ public class EnemyEntityBase : GameEntityBase
         // 身動きが取れない場合、進行不可の為自身を破棄する
         if(gameObjectNowPos == transform.position)
         {
-            OnGoalAchieved?.Invoke();
+            OnGoalAchieved?.Invoke(_enemyMaster.attack);
             Destroy(gameObject);
         }
     }
 
     /// <summary>
-    /// ダメージを受ける関数
+    /// ダメージを受ける
     /// </summary>
     /// <param name="damage">ダメージ量</param>
     public void TakeDamage(int damage)
@@ -158,16 +157,16 @@ public class EnemyEntityBase : GameEntityBase
     }
 
     /// <summary>
-    /// 現在のマップ位置を設定する
+    /// 現在のフィールド位置を設定する
     /// </summary>
-    /// <param name="mapPos">マップ位置</param>
-    public void SetMapPos(Vector2Int mapPos)
+    /// <param name="fieldPos">フィールド位置</param>
+    public void SetFieldPos(Vector2Int fieldPos)
     {
-        _mapNowPos = mapPos;
+        _fieldNowPos = fieldPos;
     }
 
     /// <summary>
-    /// ダメージの演出をする関数
+    /// ダメージの演出をする
     /// </summary>
     /// <returns></returns>
     private IEnumerator DamageEffect()

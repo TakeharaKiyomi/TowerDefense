@@ -4,20 +4,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class MapManager : MonoBehaviour {
+public class FieldManager : MonoBehaviour {
 
-    // マップのプレハブの名前
-    private Dictionary<FieldGridType, string> _mapPrefabStrings = new Dictionary<FieldGridType, string>
+    // シングルトン（シーンを跨がずシーン内でのみ唯一無二）
+    private static FieldManager _instance;
+
+    public static FieldManager Instance
     {
-        {FieldGridType.ROAD, "Map/Road"},
-        {FieldGridType.FOREST, "Map/Forest"},
-    };
-    // マップのプレハブの実体
-    private Dictionary<FieldGridType, GameObject> _mapPrefabs = new Dictionary<FieldGridType, GameObject>();
+        get
+        {
+            // インスタンスが存在しない場合、既に生成しているインスタンスを取得し設定する
+            if (_instance == null)
+            {
+                _instance = FindAnyObjectByType<FieldManager>();
+            }
+            return _instance;
+        }
+    }
 
+    // マップをクリック
+    public Action<FieldGrid> FieldGridClicked;
+
+    // FIXME: マップ情報は一旦コードで管理して後で他のマスター管理と同じにする
     // マップのマス目情報
-    public const int MAX_MAP_X = 16; // 最大横幅 
-    public const int MAX_MAP_Y = 10; // 最大縦幅
+    private const int MAX_MAP_X = 16; // 最大横幅 
+    private const int MAX_MAP_Y = 10; // 最大縦幅
     private int[,] _baseMapData = new int[MAX_MAP_Y, MAX_MAP_X]
     {
         {2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -35,41 +46,20 @@ public class MapManager : MonoBehaviour {
     // マップの全マスを格納した親
     private GameObject _mapParent;
 
-    // マップをクリック
-    public Action<FieldGrid> FieldGridClicked;
-
     // マップ情報
-    private FieldGrid[,] _mapData = new FieldGrid[MAX_MAP_Y, MAX_MAP_X];
-
-    // シングルトン
-    private static MapManager _instance;
-
-    public static MapManager Instance
-    {
-        get
-        {
-            // 存在しない場合
-            if (_instance == null)
-            {
-                _instance = FindAnyObjectByType<MapManager>();
-            }
-            return _instance;
-        }
-    }
-    // シングルトンにするため、外部から呼ばれないようにする
-    private MapManager(){
-    }
+    private readonly FieldGrid[,] _mapData = new FieldGrid[MAX_MAP_Y, MAX_MAP_X];
 
     void Awake()
     {
-        _mapParent = new GameObject();
-        _mapParent.name = "MapParent";
+        _mapParent = new("MapParent");
     }
 
-    // マップ情報生成処理
-    public void CreateMapData()
+    /// <summary>
+    /// フィールドを生成する
+    /// </summary>
+    public void CreateEntity()
     {
-        // マップデータを元に実際のマップOBJを生成
+        // フィールドデータを元に実際のフィールド単一を生成
         float posX = 0.0f;
         float posY = 0.0f;
         for (int i = 0; i < _baseMapData.GetLength(0); i++)
@@ -77,34 +67,43 @@ public class MapManager : MonoBehaviour {
             SpriteRenderer spriteRenderer = null;
             for(int j = 0; j < _baseMapData.GetLength(1); j++)
             {
-                // インスタンス生成
                 FieldGridType type = (FieldGridType)_baseMapData[i, j];
-                _mapData[i, j] = FieldGrid.CreateEntity(type);
-                spriteRenderer = _mapData[i, j].GetComponent<SpriteRenderer>();
-                _mapData[i, j].transform.position = new Vector3(posX, posY, 0.0f);
-                _mapData[i, j].name += "(" + j + "_" + i + ")";
-                posX = _mapData[i, j].transform.position.x + spriteRenderer.size.x;
-                _mapData[i, j].transform.SetParent(_mapParent.transform);
-                FieldGrid fieldGrid = _mapData[i, j];
-                // TODO: 一時的に保持が必要かは要確認
-                // GameObject obj = _mapData[i, j];
-                fieldGrid.Clicked += () => onFieldGridClicked(fieldGrid);
+                // フィールド単一をインスタンス生成する
+                FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
+                fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);
+                fieldGrid.name += "(" + j + "_" + i + ")";
+                fieldGrid.transform.SetParent(_mapParent.transform);
+                // フィールド単一を押下した時のイベントを発火させる
+                fieldGrid.Clicked += () => {
+                    FieldGridClicked?.Invoke(fieldGrid);
+                };
+                // 現在位置＋横幅分を次のX座標として設定する
+                spriteRenderer = fieldGrid.GetComponent<SpriteRenderer>();
+                posX = fieldGrid.transform.position.x + spriteRenderer.bounds.size.x;
+                // フィールド単一を保持
+                _mapData[i, j] = fieldGrid;
             }
-            if(spriteRenderer == null) continue;
+            // 行が変わるのでX座標をリセット
             posX = 0.0f;
-            posY -= spriteRenderer.size.y;
+            // スプライトレンダラーが存在しない場合、1件も取得できていないので次の行へ進む
+            if(spriteRenderer == null) continue;
+            // 次の行へY座標を更新する
+            posY -= spriteRenderer.bounds.size.y;
         }
 
-        // マップの大きさ調整
+        // フィールドの親オブジェクトの大きさを調整する
         _mapParent.transform.localScale = new Vector3(0.75f, 0.75f, 1.0f);
-        // マップの親OBJの子全体の大きさを元に画面中央にマップを配置
+        // フィールドの親オブジェクトの子全体の大きさを元に画面中央にマップを配置
         SpriteRenderer[] renderers = _mapParent.GetComponentsInChildren<SpriteRenderer>();
+        if(renderers.Length <= 0) return;
         Bounds bounds = renderers[0].bounds;
         foreach (SpriteRenderer sr in renderers)
         {
             bounds.Encapsulate(sr.bounds);
         }
+        // FIXME: カメラのZ軸は本当にこの値で正しいものが取れるか再検討する。
         Camera camera = Camera.main;
+        Debug.Log(camera.transform.position.z + " : " + camera.nearClipPlane + " : " + transform.position.z + " : カメラのZ軸だよ");
         Vector3 center = camera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, Mathf.Abs(camera.transform.position.z)));
         _mapParent.transform.position += center - bounds.center;
     }
@@ -150,11 +149,6 @@ public class MapManager : MonoBehaviour {
         // int index = pos.x + pos.y * MAX_MAP_X;
         // FieldGrid fieldGrid = _mapData[index.y, index.x].GetComponent<FieldGrid>();
         _mapData[index.y, index.x].GetComponent<FieldGrid>().SetPlaced();
-    }
-
-    private void onFieldGridClicked(FieldGrid fieldGrid)
-    {
-        FieldGridClicked?.Invoke(fieldGrid);
     }
 
     private bool IsValidIndex(Vector2Int index)
