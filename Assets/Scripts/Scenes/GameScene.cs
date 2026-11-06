@@ -59,15 +59,16 @@ public class GameScene : MonoBehaviour
                     _                           => StandardTower.CreateEntity()
                 };
                 towerGameObject.transform.position = fieldGrid.gameObject.transform.position;
-                fieldGrid.SetPlaced();
+                fieldGrid.SetIsPlaced(true);
                 AudioManager.Instance.PlaySE(SEAudioType.TOWER_INSTALLATION);
             }
         };
+        // FIXME: 設計の見直しが必要
         GameObject basePrefab = (GameObject)Resources.Load("Base/base");
         GameObject baseObj = Instantiate(basePrefab);
         baseObj.name = basePrefab.name;
-        baseObj.transform.position = FieldManager.Instance.GetFieldGridTransformPos(_baseFieldPos);
-        FieldManager.Instance.SetFieldGridPlaced(_baseFieldPos);
+        baseObj.transform.position = FieldManager.Instance.GetFieldGrid(_baseFieldPos).transform.position;
+        FieldManager.Instance.GetFieldGrid(_baseFieldPos).SetIsPlaced(true);
 
         // 敵
         EnemyManager.Instance.OnEnemyGoalAchieved += (attack) =>

@@ -78,6 +78,13 @@ public class EnemyManager : MonoBehaviour
     /// <param name="fieldPos">設置するフィールドの位置</param>
     public void CreateEntity(Vector2Int fieldPos)
     {
+        // 指定した位置のフィールド情報を取得
+        FieldGrid fieldGrid = FieldManager.Instance.GetFieldGrid(fieldPos);
+        if(fieldGrid == null)
+        {
+            Debug.Log("存在しないフィールドに敵を設置しようとしています。");
+            return;
+        }
         // 最大ウェーブを超えた場合、イベントを発火させる
         if(_wave.Length <= _waveNowIndex)
         {
@@ -111,7 +118,7 @@ public class EnemyManager : MonoBehaviour
         // 設置するフィールドの位置を設定する
         enemyScript.SetFieldPos(fieldPos);
         // フィールドの位置から座標を取得し設定する
-        enemyScript.transform.position = FieldManager.Instance.GetFieldGridTransformPos(fieldPos);
+        enemyScript.transform.position = fieldGrid.transform.position;
         // 親オブジェクトを設定する
         enemyScript.transform.SetParent(_enamyParent.transform, false);
         // 敵がゴールに到達した時のイベントを発火させる

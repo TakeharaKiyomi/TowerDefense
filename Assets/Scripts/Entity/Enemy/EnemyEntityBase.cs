@@ -44,7 +44,7 @@ public class EnemyEntityBase : GameEntityBase
     private Vector2Int[] _directions;
 
     // 前回の進行方向
-    private Vector2Int _previousDirection = Vector2Int.zero;
+    private Vector2Int _previousDirection = default;
 
     // ダメージ用コルーチン
     private Coroutine _damageCoroutine;
@@ -82,7 +82,7 @@ public class EnemyEntityBase : GameEntityBase
             FieldGrid nextDirectionFieldGrid = FieldManager.Instance.GetFieldGrid(nextDirectionFieldPos);
             // 存在しないフィールドもしくは道ではない場合、次の進行方向へ進む
             if(nextDirectionFieldGrid == null || nextDirectionFieldGrid.FieldGridType != FieldGridType.ROAD) continue;
-            Vector2 fieldGridSize = FieldManager.Instance.GetFieldGridSize();
+            Vector3 fieldGridSize = nextDirectionFieldGrid.SpriteRenderer.bounds.size;
             // 移動量
             float distance = _enemyMaster.speed * Time.deltaTime * fieldGridSize.x;
             // 移動量に進行方向を掛ける（Y座標の進行方向が負数なので逆の符号で掛ける）
@@ -113,14 +113,15 @@ public class EnemyEntityBase : GameEntityBase
                 // 移動距離の合計に加算
                 _totalMoveDistance += Math.Abs(distanceVector3.x) + Math.Abs(distanceVector3.y);
                 // 当たっているフィールド部分からフィールド上の位置情報を取得する
-                Vector2Int? nextFieldGridPos = FieldManager.Instance.GetFieldGridPos(nextFieldGrid);
-                if(nextFieldGridPos == null)
+                Vector2Int nextFieldGridPos = FieldManager.Instance.GetFieldGridPos(nextFieldGrid);
+                // 存在しないフィールドだった場合、何もしない
+                if(nextFieldGridPos == FieldManager.NOT_EXIST_FIELD_GRID_POS)
                 {
                     Debug.Log("位置が不明なフィールドと衝突しています。");
                     break;
                 }
                 // 現在のフィールド位置を設定
-                _fieldNowPos = nextFieldGridPos.Value;
+                _fieldNowPos = nextFieldGridPos;
                 // 現在の進行方向を保存
                 _previousDirection = _directions[i];
                 // 現在の進行方向から順番になるように順番を更新

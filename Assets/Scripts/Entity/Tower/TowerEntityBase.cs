@@ -23,7 +23,7 @@ public abstract class TowerEntityBase : GameEntityBase
             return;
         }
         // 射程範囲内に敵が存在するか確認し、居なければ何もしない
-        Vector2 fieldGridSize = FieldManager.Instance.GetFieldGridSize();
+        Vector3 fieldGridSize = FieldManager.Instance.GetFieldGrid().SpriteRenderer.bounds.size;
         Collider2D[] collider2Ds = Physics2D.OverlapBoxAll(
             transform.position,
             fieldGridSize * masterData.range,

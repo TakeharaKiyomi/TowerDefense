@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
 public class FieldManager : MonoBehaviour {
+
+    // 存在しないフィールド座標
+    public static readonly Vector2Int NOT_EXIST_FIELD_GRID_POS = new(-1, -1);
 
     // シングルトン（シーンを跨がずシーン内でのみ唯一無二）
     private static FieldManager _instance;
@@ -22,14 +23,14 @@ public class FieldManager : MonoBehaviour {
         }
     }
 
-    // マップをクリック
+    // フィールド単一をクリック
     public Action<FieldGrid> FieldGridClicked;
 
-    // FIXME: マップ情報は一旦コードで管理して後で他のマスター管理と同じにする
-    // マップのマス目情報
-    private const int MAX_MAP_X = 16; // 最大横幅 
-    private const int MAX_MAP_Y = 10; // 最大縦幅
-    private int[,] _baseMapData = new int[MAX_MAP_Y, MAX_MAP_X]
+    // FIXME: フィールド情報は一旦コードで管理して後で他のマスター管理と同じにする
+    // フィールド単一情報
+    private const int MAX_FIELD_X = 16; // 最大横の数 
+    private const int MAX_FIELD_Y = 10; // 最大縦の数
+    private readonly int[,] _baseFieldData = new int[MAX_FIELD_Y, MAX_FIELD_X]
     {
         {2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1},
@@ -43,15 +44,15 @@ public class FieldManager : MonoBehaviour {
         {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
     };
 
-    // マップの全マスを格納した親
-    private GameObject _mapParent;
+    // 全フィールドを格納した親
+    private GameObject _fieldParent;
 
-    // マップ情報
-    private readonly FieldGrid[,] _mapData = new FieldGrid[MAX_MAP_Y, MAX_MAP_X];
+    // 全フィールド情報
+    private readonly FieldGrid[,] _fieldData = new FieldGrid[MAX_FIELD_Y, MAX_FIELD_X];
 
     void Awake()
     {
-        _mapParent = new("MapParent");
+        _fieldParent = new("FieldParent");
     }
 
     /// <summary>
@@ -60,102 +61,81 @@ public class FieldManager : MonoBehaviour {
     public void CreateEntity()
     {
         // フィールドデータを元に実際のフィールド単一を生成
+        Bounds bounds = default;
         float posX = 0.0f;
         float posY = 0.0f;
-        for (int i = 0; i < _baseMapData.GetLength(0); i++)
+        for (int i = 0; i < _baseFieldData.GetLength(0); i++)
         {
-            SpriteRenderer spriteRenderer = null;
-            for(int j = 0; j < _baseMapData.GetLength(1); j++)
+            for(int j = 0; j < _baseFieldData.GetLength(1); j++)
             {
-                FieldGridType type = (FieldGridType)_baseMapData[i, j];
+                FieldGridType type = (FieldGridType)_baseFieldData[i, j];
                 // フィールド単一をインスタンス生成する
                 FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
                 fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);
                 fieldGrid.name += "(" + j + "_" + i + ")";
-                fieldGrid.transform.SetParent(_mapParent.transform);
+                fieldGrid.transform.SetParent(_fieldParent.transform);
                 // フィールド単一を押下した時のイベントを発火させる
                 fieldGrid.Clicked += () => {
                     FieldGridClicked?.Invoke(fieldGrid);
                 };
-                // 現在位置＋横幅分を次のX座標として設定する
-                spriteRenderer = fieldGrid.GetComponent<SpriteRenderer>();
-                posX = fieldGrid.transform.position.x + spriteRenderer.bounds.size.x;
+                // 現在位置＋横幅を次のX座標として設定する
+                posX = fieldGrid.transform.position.x + fieldGrid.SpriteRenderer.bounds.size.x;
                 // フィールド単一を保持
-                _mapData[i, j] = fieldGrid;
+                _fieldData[i, j] = fieldGrid;
+                // 親オブジェクトの中心を全フィールドの位置の中心に移動させるため、境界ボックスを格納する
+                bounds.Encapsulate(fieldGrid.SpriteRenderer.bounds);
             }
             // 行が変わるのでX座標をリセット
             posX = 0.0f;
-            // スプライトレンダラーが存在しない場合、1件も取得できていないので次の行へ進む
-            if(spriteRenderer == null) continue;
-            // 次の行へY座標を更新する
-            posY -= spriteRenderer.bounds.size.y;
+            // 既に生成されている場合、生成済みの高さを取得し次の行へY座標を更新する
+            posY -= 0 <= _fieldData.Length ? _fieldData[0, 0].SpriteRenderer.bounds.size.y : 0.0f;
         }
-
-        // フィールドの親オブジェクトの大きさを調整する
-        _mapParent.transform.localScale = new Vector3(0.75f, 0.75f, 1.0f);
-        // フィールドの親オブジェクトの子全体の大きさを元に画面中央にマップを配置
-        SpriteRenderer[] renderers = _mapParent.GetComponentsInChildren<SpriteRenderer>();
-        if(renderers.Length <= 0) return;
-        Bounds bounds = renderers[0].bounds;
-        foreach (SpriteRenderer sr in renderers)
+        // 全フィールドの位置を中心に移動させるため、境界ボックスの中心値を引く
+        foreach(var item in _fieldData)
         {
-            bounds.Encapsulate(sr.bounds);
+            item.transform.position -= bounds.center;
         }
-        // FIXME: カメラのZ軸は本当にこの値で正しいものが取れるか再検討する。
-        Camera camera = Camera.main;
-        Debug.Log(camera.transform.position.z + " : " + camera.nearClipPlane + " : " + transform.position.z + " : カメラのZ軸だよ");
-        Vector3 center = camera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, Mathf.Abs(camera.transform.position.z)));
-        _mapParent.transform.position += center - bounds.center;
     }
     
-    public Vector2Int? GetFieldGridPos(FieldGrid fieldGrid)
+    /// <summary>
+    /// 指定のフィールド情報からフィールドの位置を取得する
+    /// </summary>
+    /// <param name="fieldGrid">位置を取得したいフィールド情報</param>
+    /// <returns></returns>
+    public Vector2Int GetFieldGridPos(FieldGrid fieldGrid)
     {
-        for (int i = 0; i < _mapData.GetLength(0); i++)
+        for (int i = 0; i < _fieldData.GetLength(0); i++)
         {
-            for(int j = 0; j < _mapData.GetLength(1); j++)
+            for(int j = 0; j < _fieldData.GetLength(1); j++)
             {
-                if(_mapData[i, j] != fieldGrid) continue;
+                if(_fieldData[i, j] != fieldGrid) continue;
                 return new Vector2Int(j, i);
             }
         }
-        return null; // FIXME: ?は一般的かどうかも要確認
-        /* int index = Array.IndexOf(_mapData, fieldGrid.gameObject);
-        if(index == -1) return null;
-        return new Vector2Int(index % MAX_MAP_X, index / MAX_MAP_X); */
+        return NOT_EXIST_FIELD_GRID_POS;
     }
 
-    // FIXME: 全体的に指定したindexが存在するかどうかの条件分岐を入れるかどうかは考える
-    public Vector3 GetFieldGridTransformPos(Vector2Int index)
+    /// <summary>
+    /// 指定の位置のフィールド情報を取得する
+    /// </summary>
+    /// <param name="pos">指定の位置</param>
+    /// <returns></returns>
+    public FieldGrid GetFieldGrid(Vector2Int pos = default)
     {
-        return _mapData[index.y, index.x].transform.position;
+        if(!IsValidIndex(pos)) return null;
+        return _fieldData[pos.y, pos.x];
     }
 
-    public FieldGrid GetFieldGrid(Vector2Int index = default)
+    /// <summary>
+    /// 指定の位置が有効なフィールドの位置であるかを返す
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    private bool IsValidIndex(Vector2Int pos)
     {
-        // FIXME: マス目が存在しないことも判定に含まれているから安易に削除はできない
-        if(!IsValidIndex(index)) return null;
-        return _mapData[index.y, index.x].GetComponent<FieldGrid>();
-    }
-
-    public Vector2 GetFieldGridSize(Vector2Int index = default)
-    {
-        // FIXME: 何をしているか要確認。恐らく元のサイズに自身に掛ける予定のスケールをかけているだけ。
-        SpriteRenderer spriteRenderer = _mapData[index.y, index.x].GetComponent<SpriteRenderer>();
-        return Vector2.Scale(spriteRenderer.sprite.bounds.size, spriteRenderer.transform.lossyScale);
-    }
-
-    public void SetFieldGridPlaced(Vector2Int index)
-    {
-        // int index = pos.x + pos.y * MAX_MAP_X;
-        // FieldGrid fieldGrid = _mapData[index.y, index.x].GetComponent<FieldGrid>();
-        _mapData[index.y, index.x].GetComponent<FieldGrid>().SetPlaced();
-    }
-
-    private bool IsValidIndex(Vector2Int index)
-    {
-        return  0 <= index.x && 
-                0 <= index.y &&
-                index.x < MAX_MAP_X &&
-                index.y < MAX_MAP_Y;
+        return  0 <= pos.x && 
+                0 <= pos.y &&
+                pos.x < MAX_FIELD_X &&
+                pos.y < MAX_FIELD_Y;
     }
 }

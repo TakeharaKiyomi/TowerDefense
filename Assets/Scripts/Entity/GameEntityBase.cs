@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public abstract class GameEntityBase : MonoBehaviour {
 
-    private readonly static Dictionary<GameEntityPrefabType, GameObject> prefabs = new ();
+    private readonly static Dictionary<GameEntityPrefabType, GameObject> prefabs = new();
 
     /// <summary>
     /// インスタンスを生成する

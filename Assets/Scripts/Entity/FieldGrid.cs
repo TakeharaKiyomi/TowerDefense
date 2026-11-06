@@ -13,26 +13,24 @@ public class FieldGrid : GameEntityBase
             return _fieldGridType;
         }
     }
+
+    private SpriteRenderer _spriteRenderer = default;
+    public SpriteRenderer SpriteRenderer
+    {
+        get
+        {
+            return _spriteRenderer;
+        }
+    }
+
+    public event Action Clicked;
+    
     // 配置済みか否か
     private bool isPlaced = false;
 
-    public event Action Clicked;
-
     void Awake()
     {
-        
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void OnMouseDown()
@@ -46,9 +44,9 @@ public class FieldGrid : GameEntityBase
     }
 
     // FIXME: 仮置き
-    public void SetPlaced()
+    public void SetIsPlaced(bool flag)
     {
-        isPlaced = true;
+        isPlaced = flag;
     }
 
     public static FieldGrid CreateEntity(FieldGridType type)
