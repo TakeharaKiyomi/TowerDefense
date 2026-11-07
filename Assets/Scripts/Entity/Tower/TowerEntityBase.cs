@@ -24,11 +24,12 @@ public abstract class TowerEntityBase : GameEntityBase
         }
         // 射程範囲内に敵が存在するか確認し、居なければ何もしない
         Vector3 fieldGridSize = FieldManager.Instance.GetFieldGrid().SpriteRenderer.bounds.size;
+        LayerMask layerMask = LayerMaskType.ENEMY.GetLayerMask();
         Collider2D[] collider2Ds = Physics2D.OverlapBoxAll(
             transform.position,
             fieldGridSize * masterData.range,
             0.0f,
-            LayerMaskType.ENEMY.GetLayerMask()
+            layerMask
         );
         if(collider2Ds.Length <= 0) return;
         // 移動距離の合計が一番多い順に敵をソートする
@@ -38,13 +39,16 @@ public abstract class TowerEntityBase : GameEntityBase
         }
         _enemyEntityBasesTemp.Sort((a, b) => b.TotalMoveDistance.CompareTo(a.TotalMoveDistance));
         // 弾をインスタンス生成する
-        BulletEntityBase bulletScript = BulletEntityBase.CreateEntity();
+        StandardBullet bulletScript = StandardBullet.CreateEntity();
         bulletScript.transform.position = transform.position;
         bulletScript.transform.SetParent(gameObject.transform);
         // 弾の情報を設定
         float addDistance = masterData.velocity * Time.deltaTime * fieldGridSize.x;
         Vector3 distance = _enemyEntityBasesTemp[0].transform.position - transform.position;
-        bulletScript.SetBulletEntityBaseData(new BulletEntityBaseData(masterData.attack, addDistance, distance.normalized));
+        bulletScript.Initializa(
+            new BulletConfig(masterData.attack, addDistance, distance.normalized),
+            layerMask
+        );
         // 経過時間をリセット
         _elapsedTime = 0.0f;
         // 射程内の敵リストを破棄

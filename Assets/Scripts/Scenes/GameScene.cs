@@ -7,47 +7,54 @@ using System;
 
 public class GameScene : MonoBehaviour
 {
+    // ステージの情報
     [SerializeField]
-    public GameObject canvas;
+    private StageConfigMaster _stageConfigMaster;
+
+    // タワーの情報
+    [SerializeField]
+    private List<TowerMaster> _towerMasters;
 
     [SerializeField]
-    public GameObject startButton;
-    [SerializeField]
-    public GameObject waveLabel;
-    [SerializeField]
-    public GameObject hitPointLabel;
-    [SerializeField]
-    public GameObject moneyLabel;
-    [SerializeField]
-    private List<TowerMaster> towerMasters;
+    private GameObject _canvas;
 
-    // FIXME: インスペクター上で設定できるようにする方が良いかも
-    // 拠点のField座標
-    private Vector2Int _baseFieldPos = new Vector2Int(0, 3);
+    [SerializeField]
+    private Button _startButton;
 
-    private Vector2Int _enemyFieldInitPos = new Vector2Int(3, 9);
+    [SerializeField]
+    private TextMeshProUGUI _waveLabel;
+
+    [SerializeField]
+    private TextMeshProUGUI _hitPointLabel;
+
+    [SerializeField]
+    private TextMeshProUGUI _moneyLabel;
+
 
     // ゲーム開始か否か
     private bool isGameStart = false;
 
-    private int _hitPoint = 10;
-    private int _money = 150;
+    private int _hitPoint;
+    private int _money;
 
     void Awake()
     {
-        
+        _hitPoint = _stageConfigMaster.initHitPoint;
+        _money = _stageConfigMaster.initMoney;
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // BGM再生
         AudioManager.Instance.PlayBGM(BGMAudioType.GAME);
 
-        // フィールド情報を生成し、拠点を設定する
+        // フィールド情報を生成
         FieldManager.Instance.CreateEntity();
+        // フィールドの押下処理
         FieldManager.Instance.FieldGridClicked += (fieldGrid) => {
             PlaceTowerButton selectedButton = PlaceTowerButton.SelectedButton;
             if(selectedButton == null) return; 
-            TowerMaster towerMaster = towerMasters.Find(item => item.type == selectedButton.TowerType);
+            TowerMaster towerMaster = _towerMasters.Find(item => item.type == selectedButton.TowerType);
             if(towerMaster.moneyCost <= _money)
             {
                 _money -= towerMaster.moneyCost;
@@ -63,12 +70,11 @@ public class GameScene : MonoBehaviour
                 AudioManager.Instance.PlaySE(SEAudioType.TOWER_INSTALLATION);
             }
         };
-        // FIXME: 設計の見直しが必要
-        GameObject basePrefab = (GameObject)Resources.Load("Base/base");
-        GameObject baseObj = Instantiate(basePrefab);
-        baseObj.name = basePrefab.name;
-        baseObj.transform.position = FieldManager.Instance.GetFieldGrid(_baseFieldPos).transform.position;
-        FieldManager.Instance.GetFieldGrid(_baseFieldPos).SetIsPlaced(true);
+        // 拠点
+        BaseCore baseCore = BaseCore.CreateEntity();
+        FieldGrid baseFieldGrid = FieldManager.Instance.GetFieldGrid(_stageConfigMaster.baseFieldPos);
+        baseCore.transform.position = baseFieldGrid.transform.position;
+        baseFieldGrid.SetIsPlaced(true);
 
         // 敵
         EnemyManager.Instance.OnEnemyGoalAchieved += (attack) =>
@@ -80,45 +86,46 @@ public class GameScene : MonoBehaviour
                 return;
             }
             // HPが足らない場合、ゲームオーバー画面に進む
-            SceneManager.LoadScene(SceneNames.gameOver);
+            SceneManager.LoadScene(SceneType.GAME_OVER.GetSceneName());
         };
         EnemyManager.Instance.OnAllWaveClear += () =>
         {
-            SceneManager.LoadScene(SceneNames.gameClear);
+            SceneManager.LoadScene(SceneType.GAME_CLEAR.GetSceneName());
         };
         EnemyManager.Instance.OnEnemyDefeated += (drops) =>
         {
             foreach(DropItemBaseMaster drop in drops)
             {
-                _money += drop switch
+                switch(drop)
                 {
-                    GoldItemMaster goldItemMaster => goldItemMaster.amount,
-                    _ => 0
-                };
+                    case GoldItemMaster goldItemMaster:
+                        _money += goldItemMaster.amount;
+                        break;
+                }
             }
         };
 
         // UI
-        GameObject buttonPrefab = (GameObject)Resources.Load("UI/Button/PlaceTowerButton");
         float posX = 0.0f;
-        foreach(var item in towerMasters)
+        foreach(var item in _towerMasters)
         {
-            GameObject buttonObj = Instantiate(buttonPrefab);
-            buttonObj.name = buttonPrefab.name;
-            PlaceTowerButton buttonScript = buttonObj.GetComponent<PlaceTowerButton>();
-            buttonScript.SetTextAndType(item);
-            buttonObj.transform.SetParent(canvas.transform, false);
+            PlaceTowerButton placeTowerButton = PlaceTowerButton.CreateEntity();
+            placeTowerButton.Initializa(item);
+            placeTowerButton.transform.SetParent(_canvas.transform, false);
+            if(item.type == TowerEntityType.STANDARD)
+            {
+                placeTowerButton.SetSelected();
+            }
             // FIXME: 設計上の見直し必要
-            RectTransform rect = buttonObj.GetComponent<RectTransform>();
-            Vector3 pos = buttonObj.transform.position;
+            RectTransform rect = placeTowerButton.GetComponent<RectTransform>();
+            Vector3 pos = placeTowerButton.transform.position;
             pos.x += posX;
-            buttonObj.transform.position = pos;
+            placeTowerButton.transform.position = pos;
             posX += rect.rect.width + 10.0f;
         }
-        Button startButtonScript = startButton.GetComponent<Button>();
-        startButtonScript.onClick.AddListener(() => {
+        _startButton.onClick.AddListener(() => {
             isGameStart = true;
-            startButtonScript.interactable = false;
+            _startButton.interactable = false;
             AudioManager.Instance.PlaySE(SEAudioType.BUTTON_CLICK);
         });
     }
@@ -127,17 +134,13 @@ public class GameScene : MonoBehaviour
     void Update()
     {
         // UI
-        TextMeshProUGUI waveLabelScript = waveLabel.GetComponent<TextMeshProUGUI>();
-        waveLabelScript.text = "WAVE: " + (EnemyManager.Instance.WaveNowIndex + 1);
-        TextMeshProUGUI hitPointLabelScript = hitPointLabel.GetComponent<TextMeshProUGUI>();
-        hitPointLabelScript.text = "拠点HP: " + _hitPoint;
-        TextMeshProUGUI moneyLabelScript = moneyLabel.GetComponent<TextMeshProUGUI>();
-        moneyLabelScript.text = "GOLD: " + _money;
+        _waveLabel.text = "WAVE: " + (EnemyManager.Instance.WaveNowIndex + 1);
+        _hitPointLabel.text = "拠点HP: " + _hitPoint;
+        _moneyLabel.text = "GOLD: " + _money;
 
         if(!isGameStart) return;
 
         // 敵生成
-        EnemyManager.Instance.CreateEntity(_enemyFieldInitPos);
-
+        EnemyManager.Instance.CreateEntity(_stageConfigMaster.enemyFieldInitPos);
     }
 }

@@ -12,6 +12,10 @@ public class HeavyArmorEnemy : EnemyEntityBase
         base.Update();
     }
 
+    /// <summary>
+    /// インスタンスを生成する
+    /// </summary>
+    /// <returns>生成されたインスタンス</returns>
     public static HeavyArmorEnemy CreateEntity()
     {
         return CreateEntity<HeavyArmorEnemy>(GameEntityPrefabType.HEAVYARMOR_ENEMY);

@@ -3,17 +3,12 @@ using System.Linq;
 using UnityEngine;
 using System.Collections;
 
-public class EnemyEntityBase : GameEntityBase
+[RequireComponent(typeof(SpriteRenderer))]
+public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
 {
     // 敵の情報
     [SerializeField]
     protected EnemyMaster _enemyMaster;
-    public EnemyMaster EnemyMaster {
-        get
-        {
-            return _enemyMaster;
-        }
-    }
 
     // 移動距離の合計
     private float _totalMoveDistance = 0.0f;
@@ -52,9 +47,11 @@ public class EnemyEntityBase : GameEntityBase
     // ベースの色
     private Color _baseColor;
 
+    private SpriteRenderer spriteRenderer;
+
     protected void Start()
     {
-        SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         _baseColor = spriteRenderer.color;
         _hitPoint = _enemyMaster.hitPoint;
         _directions = _enemyMaster.directions;
@@ -86,13 +83,13 @@ public class EnemyEntityBase : GameEntityBase
             // 移動量
             float distance = _enemyMaster.speed * Time.deltaTime * fieldGridSize.x;
             // 移動量に進行方向を掛ける（Y座標の進行方向が負数なので逆の符号で掛ける）
+            // FIXME: 負数にしないといけない理由は別にあるかも...
             Vector3 distanceVector3 = new (
                 distance *  _directions[i].x,
                 distance * -_directions[i].y,
                 0.0f
             );
             // 半分のサイズに進行方向を掛ける（中心座標からズラすため進行方向と逆の符号で掛ける）
-            SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
             Vector3 enemyHalfSize = new (
                 spriteRenderer.bounds.extents.x * -_directions[i].x,
                 spriteRenderer.bounds.extents.y *  _directions[i].y,
@@ -172,7 +169,6 @@ public class EnemyEntityBase : GameEntityBase
     /// <returns></returns>
     private IEnumerator DamageEffect()
     {
-        SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         // ダメージの色を設定
         spriteRenderer.color = Color.red;
         // 一時的に停止

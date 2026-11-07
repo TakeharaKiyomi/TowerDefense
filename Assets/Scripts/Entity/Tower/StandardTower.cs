@@ -10,7 +10,7 @@ public class StandardTower : TowerEntityBase
     /// <summary>
     /// インスタンスを生成する
     /// </summary>
-    /// <returns></returns>
+    /// <returns>生成されたインスタンス</returns>
     public static StandardTower CreateEntity()
     {
         return CreateEntity<StandardTower>(GameEntityPrefabType.STANDARD_TOWER);

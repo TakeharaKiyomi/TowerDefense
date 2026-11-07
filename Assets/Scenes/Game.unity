@@ -541,14 +541,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c19aaff2fdd64f33a45c9c6d67a98f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  canvas: {fileID: 1583586288}
-  startButton: {fileID: 419553884}
-  waveLabel: {fileID: 1101030701}
-  hitPointLabel: {fileID: 2028960814}
-  moneyLabel: {fileID: 664218646}
-  towerMasters:
+  _stageConfigMaster: {fileID: 11400000, guid: fe06eccfbb8d3440a9ffb9e3ff766655, type: 2}
+  _towerMasters:
   - {fileID: 11400000, guid: 5daa7dfc3b2d84bacb91caf2dcd37227, type: 2}
   - {fileID: 11400000, guid: dcfa201fc61e240b696d0abbd4b5e164, type: 2}
+  _canvas: {fileID: 1583586288}
+  _startButton: {fileID: 419553886}
+  _waveLabel: {fileID: 1101030703}
+  _hitPointLabel: {fileID: 2028960816}
+  _moneyLabel: {fileID: 664218648}
 --- !u!114 &519420035
 MonoBehaviour:
   m_ObjectHideFlags: 0

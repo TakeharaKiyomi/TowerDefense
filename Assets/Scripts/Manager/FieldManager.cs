@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 
-
 public class FieldManager : MonoBehaviour {
 
     // 存在しないフィールド座標

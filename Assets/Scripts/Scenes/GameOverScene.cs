@@ -9,22 +9,16 @@ public class GameOverScene : MonoBehaviour
 
     void Awake()
     {
+        // タイトル画面押下でタイトル画面に進む
         titleButton.onClick.AddListener(() =>
         {
             AudioManager.Instance.PlaySE(SEAudioType.BUTTON_CLICK);
-            SceneManager.LoadScene(SceneNames.title);
+            SceneManager.LoadScene(SceneType.TITLE.GetSceneName());
         });
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         AudioManager.Instance.PlayBGM(BGMAudioType.GAME_OVER);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

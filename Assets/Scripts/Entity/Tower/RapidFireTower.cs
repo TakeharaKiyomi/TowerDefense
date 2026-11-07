@@ -10,7 +10,7 @@ public class RapidFireTower : TowerEntityBase
     /// <summary>
     /// インスタンスを生成する
     /// </summary>
-    /// <returns></returns>
+    /// <returns>生成されたインスタンス</returns>
     public static RapidFireTower CreateEntity()
     {
         return CreateEntity<RapidFireTower>(GameEntityPrefabType.RAPIDFIRE_TOWER);

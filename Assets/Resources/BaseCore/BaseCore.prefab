@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4610585816028901452}
   - component: {fileID: 2390516823492555904}
+  - component: {fileID: -5209027718115908462}
   m_Layer: 0
-  m_Name: Base
+  m_Name: BaseCore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81,14 +82,26 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3966044189379602213, guid: aaec3a17d6b8b459abfacdc65b8cdad3, type: 3}
+  m_Sprite: {fileID: -6567202562563587244, guid: aaec3a17d6b8b459abfacdc65b8cdad3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.88, y: 0.89}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &-5209027718115908462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2496449047101834267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad23682db20a64cb185d96e0996c2c2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BaseCore

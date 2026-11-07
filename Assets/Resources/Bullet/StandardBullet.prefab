@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 543271572088751860}
   - component: {fileID: 3645279636219275550}
   - component: {fileID: 2898478160577497554}
-  - component: {fileID: 144500411430651770}
+  - component: {fileID: -1624103507592687299}
   m_Layer: 0
   m_Name: StandardBullet
   m_TagString: Untagged
@@ -140,7 +140,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.25, y: 0.25}
   m_EdgeRadius: 0
---- !u!114 &144500411430651770
+--- !u!114 &-1624103507592687299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -149,6 +149,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8385997272520711897}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 873bb836ae3754dc683f9a3aa7bdf35a, type: 3}
+  m_Script: {fileID: 11500000, guid: a45e553c0660e4076a96951e78445f3e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BulletEntityBase
+  m_EditorClassIdentifier: Assembly-CSharp::StandardBullet
