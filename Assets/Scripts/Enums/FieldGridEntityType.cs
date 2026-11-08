@@ -1,7 +1,6 @@
-using System;
 using UnityEngine;
 
-public enum FieldGridType
+public enum FieldGridEntityType
 {
     NONE = 0,   // 未設定
     ROAD,       // 道

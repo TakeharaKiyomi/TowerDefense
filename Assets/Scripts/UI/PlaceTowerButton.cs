@@ -35,6 +35,12 @@ public class PlaceTowerButton : GameEntityBase
             AudioManager.Instance.PlaySE(SEAudioType.BUTTON_CLICK);
         });
     }
+
+    void OnDestroy()
+    {
+        if(_selectedButton != this) return;
+        _selectedButton = null;
+    }
     
     /// <summary>
     /// インスタンスを生成する

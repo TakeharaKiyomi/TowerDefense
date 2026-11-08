@@ -12,11 +12,8 @@ public class AudioManager : MonoBehaviour
             // 既にインスタンス生成されている場合、そのまま返却する
             if(_instance != null) return _instance;
             // 保持していないだけで既にインスタンス生成されていた場合、保持してそのまま返却する
-            AudioManager audioManager = FindAnyObjectByType<AudioManager>();
-            if(audioManager != null) {
-                _instance = audioManager;
-                return audioManager;
-            }
+            _instance = FindAnyObjectByType<AudioManager>();
+            if(_instance != null) return _instance;
             // インスタンスが未生成の場合、初期化して返却する
             return new GameObject("AudioManager").AddComponent<AudioManager>();
         }
@@ -64,7 +61,7 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            clip = (AudioClip)Resources.Load(type.GetAudioClipString());
+            clip = (AudioClip)Resources.Load(type.GetResourcesString());
             if(clip == null)
             {
                 Debug.Log("指定のBGMが存在しない。");
@@ -90,7 +87,7 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            clip = (AudioClip)Resources.Load(type.GetAudioClipString());
+            clip = (AudioClip)Resources.Load(type.GetResourcesString());
             if(clip == null)
             {
                 Debug.Log("指定のSEが存在しない。");

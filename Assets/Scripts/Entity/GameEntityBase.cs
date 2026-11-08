@@ -20,10 +20,10 @@ public abstract class GameEntityBase : MonoBehaviour {
         }
         else
         {
-            prefab = (GameObject)Resources.Load(type.GetPrefabString());
+            prefab = (GameObject)Resources.Load(type.GetResourcesString());
             if(prefab == null)
             {
-                Debug.Log("指定のプレハブ(" + type.GetPrefabString() + ")が存在しない。");
+                Debug.Log("指定のプレハブ(" + type.GetResourcesString() + ")が存在しない。");
                 return null;
             }
             // プレハブ保存

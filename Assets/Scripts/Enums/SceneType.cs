@@ -13,6 +13,12 @@ public enum SceneType
 
 public static class SceneTypeExtensions
 {
+    /// <summary>
+    /// シーン名を取得する
+    /// </summary>
+    /// <param name="type">シーンの種別</param>
+    /// <returns>シーン名</returns>
+    /// <exception cref="ArgumentException">想定外の種別が指定されていた場合</exception>
     public static string GetSceneName(this SceneType type)
     {
         return type switch
@@ -21,7 +27,7 @@ public static class SceneTypeExtensions
             SceneType.GAME          => "Game",
             SceneType.GAME_CLEAR    => "GameClear",
             SceneType.GAME_OVER     => "GameOver",
-            _                       => throw new ArgumentException("SceneType(" + type + ")は不正な値です。")
+            _                       => throw new ArgumentException(nameof(SceneType) + "(" + type + ")")
         };
     }
 }

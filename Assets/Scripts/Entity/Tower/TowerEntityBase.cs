@@ -24,7 +24,7 @@ public abstract class TowerEntityBase : GameEntityBase
         }
         // 射程範囲内に敵が存在するか確認し、居なければ何もしない
         Vector3 fieldGridSize = FieldManager.Instance.GetFieldGrid().SpriteRenderer.bounds.size;
-        LayerMask layerMask = LayerMaskType.ENEMY.GetLayerMask();
+        LayerMask layerMask = new LayerMaskType[] { LayerMaskType.ENEMY }.GetLayerMask();
         Collider2D[] collider2Ds = Physics2D.OverlapBoxAll(
             transform.position,
             fieldGridSize * masterData.range,

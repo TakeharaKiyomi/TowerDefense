@@ -6,14 +6,15 @@ public abstract class BulletEntityBase : GameEntityBase
     // 弾の情報（タワーの情報に影響する）
     protected BulletConfig _bulletConfig;
 
-    // ダメージ
+    // ダメージ対象
     private LayerMask _damageTagetLayer;
 
-    private Camera mainCamera;
+    // メインカメラ
+    private Camera _mainCamera;
 
     protected void Awake()
     {
-        mainCamera = Camera.main;
+        _mainCamera = Camera.main;
     }
 
     protected void Update()
@@ -25,6 +26,8 @@ public abstract class BulletEntityBase : GameEntityBase
         Collider2D collider2D = Physics2D.OverlapPoint(transform.position, _damageTagetLayer);
         if(collider2D != null)
         {
+            // FIXME: Update内でGetComponentし続けるのはパフォーマンスが悪いらしい
+            // 衝突後は自身を破棄する
             collider2D.GetComponent<IBulletDamage>().TakeDamage(_bulletConfig.attack);
             Destroy(gameObject);
             return;
@@ -32,8 +35,8 @@ public abstract class BulletEntityBase : GameEntityBase
 
         // 弾のワールド座標からカメラ座標に変換し、画面外に行ったら自身を破棄する
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector3 min = mainCamera.WorldToViewportPoint(spriteRenderer.bounds.min);
-        Vector3 max = mainCamera.WorldToViewportPoint(spriteRenderer.bounds.max);
+        Vector3 min = _mainCamera.WorldToViewportPoint(spriteRenderer.bounds.min);
+        Vector3 max = _mainCamera.WorldToViewportPoint(spriteRenderer.bounds.max);
         if( min.x > 1.0f ||
             min.y > 1.0f || 
             max.x < 0.0f || 
@@ -43,6 +46,11 @@ public abstract class BulletEntityBase : GameEntityBase
         }
     }
 
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    /// <param name="bulletConfig">弾の情報</param>
+    /// <param name="damageTagetLayer">ダメージ対象</param>
     public void Initializa(BulletConfig bulletConfig, LayerMask damageTagetLayer)
     {
         _bulletConfig = bulletConfig;

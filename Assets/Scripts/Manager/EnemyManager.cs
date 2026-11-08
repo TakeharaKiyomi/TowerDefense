@@ -13,11 +13,6 @@ public class EnemyManager : MonoBehaviour
     {
         get
         {
-            // インスタンスが存在しない場合、既に生成しているインスタンスを取得し設定する
-            if (_instance == null)
-            {
-                _instance = FindAnyObjectByType<EnemyManager>();
-            }
             return _instance;
         }
     }
@@ -67,7 +62,6 @@ public class EnemyManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // 明示的に破棄する必要は無いが、static変数の扱いを統一する為自身なら破棄する
         if(_instance != this) return;
         _instance = null;
     }
@@ -113,7 +107,7 @@ public class EnemyManager : MonoBehaviour
         {
             EnemyEntityType.STANDARD    => StandardEnemy.CreateEntity(),
             EnemyEntityType.HEAVYARMOR  => HeavyArmorEnemy.CreateEntity(),
-            _                           => throw new ArgumentException("EnemyEntityType(" + enemyEntityType + ")は不正な値です。")
+            _                           => throw new InvalidOperationException(nameof(EnemyEntityType) + "(" + enemyEntityType + ")")
         };
         // 設置するフィールドの位置を設定する
         enemyScript.SetFieldPos(fieldPos);

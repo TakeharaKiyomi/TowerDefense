@@ -13,15 +13,21 @@ public enum SEAudioType
 
 public static class SEAudioTypeExtensions
 {
-    public static string GetAudioClipString(this SEAudioType type)
+    /// <summary>
+    /// リソースの文字列を取得する
+    /// </summary>
+    /// <param name="type">SEの種別</param>
+    /// <returns>リソースの文字列</returns>
+    /// <exception cref="ArgumentException">想定外の種別が指定されていた場合</exception>
+    public static string GetResourcesString(this SEAudioType type)
     {
-        return type switch
+        return "Audio/SE/" + type switch
         {
-            SEAudioType.BUTTON_CLICK        => "Audio/SE/ButtonClick",
-            SEAudioType.ENEMY_DAMAGE        => "Audio/SE/EnemyDamage",
-            SEAudioType.BASE_DAMAGE         => "Audio/SE/BaseDamage",
-            SEAudioType.TOWER_INSTALLATION  => "Audio/SE/TowerInstallation",
-            _                               => throw new ArgumentException("SEAudioType(" + type + ")は不正な値です。"),
+            SEAudioType.BUTTON_CLICK        => "ButtonClick",
+            SEAudioType.ENEMY_DAMAGE        => "EnemyDamage",
+            SEAudioType.BASE_DAMAGE         => "BaseDamage",
+            SEAudioType.TOWER_INSTALLATION  => "TowerInstallation",
+            _                               => throw new ArgumentException(nameof(SEAudioType) + "(" + type + ")")
         };
     }
 }

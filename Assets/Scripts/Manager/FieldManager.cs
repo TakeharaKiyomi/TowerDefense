@@ -13,11 +13,6 @@ public class FieldManager : MonoBehaviour {
     {
         get
         {
-            // インスタンスが存在しない場合、既に生成しているインスタンスを取得し設定する
-            if (_instance == null)
-            {
-                _instance = FindAnyObjectByType<FieldManager>();
-            }
             return _instance;
         }
     }
@@ -51,7 +46,22 @@ public class FieldManager : MonoBehaviour {
 
     void Awake()
     {
+        // 既にインスタンス生成されている場合は、自身を破棄する
+        if(_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        // 新規で生成されたインスタンスなので保持する
+        _instance = this;
+        // 親オブジェクトを生成する
         _fieldParent = new("FieldParent");
+    }
+
+    void OnDestroy()
+    {
+        if(_instance != this) return;
+        _instance = null;
     }
 
     /// <summary>
@@ -67,7 +77,7 @@ public class FieldManager : MonoBehaviour {
         {
             for(int j = 0; j < _baseFieldData.GetLength(1); j++)
             {
-                FieldGridType type = (FieldGridType)_baseFieldData[i, j];
+                FieldGridEntityType type = (FieldGridEntityType)_baseFieldData[i, j];
                 // フィールド単一をインスタンス生成する
                 FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
                 fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);

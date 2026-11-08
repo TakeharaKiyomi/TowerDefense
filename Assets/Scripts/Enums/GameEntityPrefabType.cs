@@ -19,11 +19,12 @@ public enum GameEntityPrefabType
 public static class GameEntityPrefabTypeExtensions
 {
     /// <summary>
-    /// プレハブ種別からリソース名を取得する
+    /// リソースの文字列を取得する
     /// </summary>
-    /// <param name="type">プレハブ種別</param>
-    /// <returns>リソース名</returns>
-    public static string GetPrefabString(this GameEntityPrefabType type)
+    /// <param name="type">プレハブの種別</param>
+    /// <returns>リソースの文字列</returns>
+    /// <exception cref="ArgumentException">想定外の種別が指定されていた場合</exception>
+    public static string GetResourcesString(this GameEntityPrefabType type)
     {
         return type switch
         {
@@ -36,7 +37,7 @@ public static class GameEntityPrefabTypeExtensions
             GameEntityPrefabType.STANDARD_ENEMY     => "Enemy/StandardEnemy",
             GameEntityPrefabType.HEAVYARMOR_ENEMY   => "Enemy/HeavyArmorEnemy",
             GameEntityPrefabType.PLACE_TOWER_BUTTON => "UI/Button/PlaceTowerButton",
-            _ => throw new ArgumentException("GameEntityPrefabType(" + type + ")は不正な値です。")
+            _ => throw new ArgumentException(nameof(GameEntityPrefabType) + "(" + type + ")")
         };
     }
 }

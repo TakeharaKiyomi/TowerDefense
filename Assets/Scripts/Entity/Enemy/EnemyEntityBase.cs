@@ -77,19 +77,18 @@ public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
                 continue;
             }
             FieldGrid nextDirectionFieldGrid = FieldManager.Instance.GetFieldGrid(nextDirectionFieldPos);
-            // 存在しないフィールドもしくは道ではない場合、次の進行方向へ進む
-            if(nextDirectionFieldGrid == null || nextDirectionFieldGrid.FieldGridType != FieldGridType.ROAD) continue;
+            // 存在しないフィールド、道ではない場合、次の進行方向へ進む
+            if(nextDirectionFieldGrid == null || nextDirectionFieldGrid.FieldGridType != FieldGridEntityType.ROAD) continue;
             Vector3 fieldGridSize = nextDirectionFieldGrid.SpriteRenderer.bounds.size;
             // 移動量
             float distance = _enemyMaster.speed * Time.deltaTime * fieldGridSize.x;
-            // 移動量に進行方向を掛ける（Y座標の進行方向が負数なので逆の符号で掛ける）
-            // FIXME: 負数にしないといけない理由は別にあるかも...
+            // 移動量に進行方向を掛ける（管理しているフィールドのYの位置がワールド座標と逆なので逆の符号を掛ける）
             Vector3 distanceVector3 = new (
                 distance *  _directions[i].x,
                 distance * -_directions[i].y,
                 0.0f
             );
-            // 半分のサイズに進行方向を掛ける（中心座標からズラすため進行方向と逆の符号で掛ける）
+            // 半分のサイズに進行方向を掛ける（全ての幅を考慮する必要があるので中心座標に半分の幅を足し込む）
             Vector3 enemyHalfSize = new (
                 spriteRenderer.bounds.extents.x * -_directions[i].x,
                 spriteRenderer.bounds.extents.y *  _directions[i].y,
@@ -98,13 +97,13 @@ public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
             // 現在位置＋移動量＋半分サイズを加算した位置を判定する次の座標位置として扱う
             Vector3 nextGameObjectPos = transform.position + distanceVector3 + enemyHalfSize;
             // 次の現在位置のフィールド情報を取得
-            LayerMask layerMask = LayerMaskType.FIELD_GRID.GetLayerMask();
+            LayerMask layerMask = new LayerMaskType[] { LayerMaskType.FIELD_GRID }.GetLayerMask();
             Collider2D collider2D = Physics2D.OverlapPoint(nextGameObjectPos, layerMask);
             if(collider2D != null)
             {
                 FieldGrid nextFieldGrid = collider2D.GetComponent<FieldGrid>();
                 // 道ではない場合、次の進行方向へ進む
-                if(nextFieldGrid.FieldGridType != FieldGridType.ROAD) continue;
+                if(nextFieldGrid.FieldGridType != FieldGridEntityType.ROAD) continue;
                 // 現在位置に移動量を加算
                 transform.position += distanceVector3;
                 // 移動距離の合計に加算
