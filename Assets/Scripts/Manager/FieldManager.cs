@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class FieldManager : MonoBehaviour {
 
+    [SerializeField]
+    private FieldMaster fieldMaster;
+    
     // 存在しないフィールド座標
     public static readonly Vector2Int NOT_EXIST_FIELD_GRID_POS = new(-1, -1);
 
@@ -20,29 +23,11 @@ public class FieldManager : MonoBehaviour {
     // フィールド単一をクリック
     public event Action<FieldGrid> FieldGridClicked;
 
-    // FIXME: フィールド情報は一旦コードで管理して後で他のマスター管理と同じにする
-    // フィールド単一情報
-    private const int MAX_FIELD_X = 16; // 最大横の数 
-    private const int MAX_FIELD_Y = 10; // 最大縦の数
-    private readonly int[,] _baseFieldData = new int[MAX_FIELD_Y, MAX_FIELD_X]
-    {
-        {2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1},
-        {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
-        {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
-    };
-
     // 全てのフィールドオブジェクトのコンテナ
     private GameObject _fieldContainer;
 
     // 全フィールド情報
-    private readonly FieldGrid[,] _fieldData = new FieldGrid[MAX_FIELD_Y, MAX_FIELD_X];
+    private readonly FieldGrid[,] _fieldData = new FieldGrid[FieldMaster.Height, FieldMaster.Width];
 
     void Awake()
     {
@@ -73,11 +58,11 @@ public class FieldManager : MonoBehaviour {
         Bounds bounds = default;
         float posX = 0.0f;
         float posY = 0.0f;
-        for (int i = 0; i < _baseFieldData.GetLength(0); i++)
+        for (int i = 0; i < FieldMaster.Height; i++)
         {
-            for(int j = 0; j < _baseFieldData.GetLength(1); j++)
+            for(int j = 0; j < FieldMaster.Width; j++)
             {
-                FieldGridEntityType type = (FieldGridEntityType)_baseFieldData[i, j];
+                FieldGridEntityType type = fieldMaster.cells[(i * FieldMaster.Width) + j];
                 // フィールド単一をインスタンス生成する
                 FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
                 fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);
@@ -144,7 +129,7 @@ public class FieldManager : MonoBehaviour {
     {
         return  0 <= pos.x && 
                 0 <= pos.y &&
-                pos.x < MAX_FIELD_X &&
-                pos.y < MAX_FIELD_Y;
+                pos.x < FieldMaster.Width &&
+                pos.y < FieldMaster.Height;
     }
 }

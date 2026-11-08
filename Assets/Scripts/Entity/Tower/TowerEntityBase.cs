@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public abstract class TowerEntityBase : GameEntityBase
 {
@@ -9,9 +10,6 @@ public abstract class TowerEntityBase : GameEntityBase
 
     // 経過時間
     private float _elapsedTime = 0.0f;
-
-    // 射程内の敵を一時的に保存するリスト
-    private readonly List<EnemyEntityBase> _enemyEntityBasesTemp = new();
 
     protected void Update()
     {
@@ -32,25 +30,20 @@ public abstract class TowerEntityBase : GameEntityBase
         );
         if(collider2Ds.Length <= 0) return;
         // 移動距離の合計が一番多い順に敵をソートする
-        foreach(var item in collider2Ds)
-        {
-            _enemyEntityBasesTemp.Add(item.GetComponent<EnemyEntityBase>());
-        }
-        _enemyEntityBasesTemp.Sort((a, b) => b.TotalMoveDistance.CompareTo(a.TotalMoveDistance));
+        EnemyEntityBase[] enemyEntityBases = Array.ConvertAll(collider2Ds, item => item.GetComponent<EnemyEntityBase>());
+        Array.Sort(enemyEntityBases, (a, b) => b.TotalMoveDistance.CompareTo(a.TotalMoveDistance));
         // 弾をインスタンス生成する
         StandardBullet bulletScript = StandardBullet.CreateEntity();
         bulletScript.transform.position = transform.position;
         bulletScript.transform.SetParent(gameObject.transform);
         // 弾の情報を設定
         float addDistance = masterData.velocity * Time.deltaTime * fieldGridSize.x;
-        Vector3 distance = _enemyEntityBasesTemp[0].transform.position - transform.position;
+        Vector3 distance = enemyEntityBases[0].transform.position - transform.position;
         bulletScript.Initializa(
             new BulletConfig(masterData.attack, addDistance, distance.normalized),
             layerMask
         );
         // 経過時間をリセット
         _elapsedTime = 0.0f;
-        // 射程内の敵リストを破棄
-        _enemyEntityBasesTemp.Clear();
     }
 }
