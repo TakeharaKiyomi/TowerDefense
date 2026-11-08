@@ -27,15 +27,14 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    // FIXME: Actionの名前にOnを付ける付けない問題は後で確認する
     // 敵がゴールを達成した時
-    public event Action<int> OnEnemyGoalAchieved;
+    public event Action<int> EnemyGoalAchieved;
 
     // 全てのウェーブをクリアした時
-    public event Action OnAllWaveClear;
+    public event Action AllWaveCleared;
 
     // 敵が撃破された時
-    public event Action<DropItemBaseMaster[]> OnEnemyDefeated;
+    public event Action<DropItemBaseMaster[]> EnemyDefeated;
 
     // 経過時間
     private float _elapsedTime = 0.0f;
@@ -43,8 +42,8 @@ public class EnemyManager : MonoBehaviour
     // 現在ウェーブの敵インデックス
     private int _waveNowEnemyIndex = 0;
 
-    // 親オブジェクト
-    private GameObject _enamyParent;
+    // 全ての敵オブジェクトのコンテナ
+    private GameObject _enamyContainer;
 
     void Awake()
     {
@@ -56,8 +55,8 @@ public class EnemyManager : MonoBehaviour
         }
         // 新規で生成されたインスタンスなので保持する
         _instance = this;
-        // 親オブジェクトを生成する
-        _enamyParent = new("EnemyParent");
+        // 全ての敵オブジェクトのコンテナを生成する
+        _enamyContainer = new("EnemyContainer");
     }
 
     void OnDestroy()
@@ -82,7 +81,7 @@ public class EnemyManager : MonoBehaviour
         // 最大ウェーブを超えた場合、イベントを発火させる
         if(_wave.Length <= _waveNowIndex)
         {
-            OnAllWaveClear?.Invoke();
+            AllWaveCleared?.Invoke();
             return;
         }
         // 経過時間が出現間隔を満たない場合、時間を加算して何もしない
@@ -95,7 +94,7 @@ public class EnemyManager : MonoBehaviour
         if(_wave[_waveNowIndex].enemies.Length <= _waveNowEnemyIndex)
         {
             // 出現中の敵が1体でも存在する場合、何もしない
-            if(0 < _enamyParent.transform.childCount) return;
+            if(0 < _enamyContainer.transform.childCount) return;
             // 次のウェーブを設定する
             _waveNowIndex ++;
             _waveNowEnemyIndex = 0;
@@ -114,11 +113,11 @@ public class EnemyManager : MonoBehaviour
         // フィールドの位置から座標を取得し設定する
         enemyScript.transform.position = fieldGrid.transform.position;
         // 親オブジェクトを設定する
-        enemyScript.transform.SetParent(_enamyParent.transform, false);
+        enemyScript.transform.SetParent(_enamyContainer.transform, false);
         // 敵がゴールに到達した時のイベントを発火させる
-        enemyScript.OnGoalAchieved += OnEnemyGoalAchieved;
+        enemyScript.GoalAchieved += EnemyGoalAchieved;
         // 敵が撃破された時のイベントを設定する
-        enemyScript.OnDefeated += OnEnemyDefeated;
+        enemyScript.Defeated += EnemyDefeated;
         // 現在のウェーブの次の敵を設定する
         _waveNowEnemyIndex +=1;
         // 経過時間をリセット

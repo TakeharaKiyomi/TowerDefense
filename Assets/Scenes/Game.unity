@@ -550,6 +550,7 @@ MonoBehaviour:
   _waveLabel: {fileID: 1101030703}
   _hitPointLabel: {fileID: 2028960816}
   _moneyLabel: {fileID: 664218648}
+  _towerContainer: {fileID: 583811167}
 --- !u!114 &519420035
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -568,6 +569,37 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8ab8c783a1d93441f9e370a3b38cc196, type: 2}
   - {fileID: 11400000, guid: cc19da54126cf4d289a4f2f9a516f1bf, type: 2}
   - {fileID: 11400000, guid: 55b82836643354a77aa935b8c98a440f, type: 2}
+--- !u!1 &583811167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 583811168}
+  m_Layer: 0
+  m_Name: TowerContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &583811168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583811167}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 83.28082, y: -11.49623, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1280,3 +1312,4 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 1583586292}
   - {fileID: 772973733}
+  - {fileID: 583811168}

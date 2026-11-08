@@ -12,9 +12,12 @@ public abstract class BulletEntityBase : GameEntityBase
     // メインカメラ
     private Camera _mainCamera;
 
+    private SpriteRenderer _spriteRenderer;
+
     protected void Awake()
     {
         _mainCamera = Camera.main;
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     protected void Update()
@@ -26,7 +29,6 @@ public abstract class BulletEntityBase : GameEntityBase
         Collider2D collider2D = Physics2D.OverlapPoint(transform.position, _damageTagetLayer);
         if(collider2D != null)
         {
-            // FIXME: Update内でGetComponentし続けるのはパフォーマンスが悪いらしい
             // 衝突後は自身を破棄する
             collider2D.GetComponent<IBulletDamage>().TakeDamage(_bulletConfig.attack);
             Destroy(gameObject);
@@ -34,9 +36,8 @@ public abstract class BulletEntityBase : GameEntityBase
         }
 
         // 弾のワールド座標からカメラ座標に変換し、画面外に行ったら自身を破棄する
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector3 min = _mainCamera.WorldToViewportPoint(spriteRenderer.bounds.min);
-        Vector3 max = _mainCamera.WorldToViewportPoint(spriteRenderer.bounds.max);
+        Vector3 min = _mainCamera.WorldToViewportPoint(_spriteRenderer.bounds.min);
+        Vector3 max = _mainCamera.WorldToViewportPoint(_spriteRenderer.bounds.max);
         if( min.x > 1.0f ||
             min.y > 1.0f || 
             max.x < 0.0f || 

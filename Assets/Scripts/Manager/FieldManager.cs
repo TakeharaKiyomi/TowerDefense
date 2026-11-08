@@ -18,7 +18,7 @@ public class FieldManager : MonoBehaviour {
     }
 
     // フィールド単一をクリック
-    public Action<FieldGrid> FieldGridClicked;
+    public event Action<FieldGrid> FieldGridClicked;
 
     // FIXME: フィールド情報は一旦コードで管理して後で他のマスター管理と同じにする
     // フィールド単一情報
@@ -38,8 +38,8 @@ public class FieldManager : MonoBehaviour {
         {2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2},
     };
 
-    // 全フィールドを格納した親
-    private GameObject _fieldParent;
+    // 全てのフィールドオブジェクトのコンテナ
+    private GameObject _fieldContainer;
 
     // 全フィールド情報
     private readonly FieldGrid[,] _fieldData = new FieldGrid[MAX_FIELD_Y, MAX_FIELD_X];
@@ -54,8 +54,8 @@ public class FieldManager : MonoBehaviour {
         }
         // 新規で生成されたインスタンスなので保持する
         _instance = this;
-        // 親オブジェクトを生成する
-        _fieldParent = new("FieldParent");
+        // 全てのフィールドオブジェクトのコンテナを生成する
+        _fieldContainer = new("FieldContainer");
     }
 
     void OnDestroy()
@@ -82,7 +82,7 @@ public class FieldManager : MonoBehaviour {
                 FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
                 fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);
                 fieldGrid.name += "(" + j + "_" + i + ")";
-                fieldGrid.transform.SetParent(_fieldParent.transform);
+                fieldGrid.transform.SetParent(_fieldContainer.transform);
                 // フィールド単一を押下した時のイベントを発火させる
                 fieldGrid.Clicked += () => {
                     FieldGridClicked?.Invoke(fieldGrid);

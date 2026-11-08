@@ -35,6 +35,10 @@ public class GameScene : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI _moneyLabel;
 
+    // 全てのタワーオブジェクトのコンテナ
+    [SerializeField]
+    private GameObject _towerContainer;
+
     // ゲーム開始か否か
     private bool isGameStart = false;
 
@@ -77,6 +81,7 @@ public class GameScene : MonoBehaviour
                 };
                 // フィールドの座標をタワーの座標に設定する
                 towerGameObject.transform.position = fieldGrid.gameObject.transform.position;
+                towerGameObject.transform.SetParent(_towerContainer.transform);
                 // フィールド単一を設置済みにする
                 fieldGrid.SetIsPlaced(true);
                 AudioManager.Instance.PlaySE(SEAudioType.TOWER_INSTALLATION);
@@ -93,7 +98,7 @@ public class GameScene : MonoBehaviour
         baseFieldGrid.SetIsPlaced(true);
 
         // 敵がゴールを達成した時
-        EnemyManager.Instance.OnEnemyGoalAchieved += (attack) =>
+        EnemyManager.Instance.EnemyGoalAchieved += (attack) =>
         {
             // 攻撃力より現在HPが足りている場合、現在HPを減算する
             if(attack < _hitPoint)
@@ -105,16 +110,16 @@ public class GameScene : MonoBehaviour
             SceneManager.LoadScene(SceneType.GAME_OVER.GetSceneName());
         };
         // 敵が全てのウェーブをクリアした時
-        EnemyManager.Instance.OnAllWaveClear += () =>
+        EnemyManager.Instance.AllWaveCleared += () =>
         {
             SceneManager.LoadScene(SceneType.GAME_CLEAR.GetSceneName());
         };
         // 敵が撃破された時
-        EnemyManager.Instance.OnEnemyDefeated += (drops) =>
+        EnemyManager.Instance.EnemyDefeated += (drops) =>
         {
-            foreach(DropItemBaseMaster drop in drops)
+            foreach(DropItemBaseMaster item in drops)
             {
-                switch(drop)
+                switch(item)
                 {
                     case GoldItemMaster goldItemMaster:
                         _money += goldItemMaster.amount;

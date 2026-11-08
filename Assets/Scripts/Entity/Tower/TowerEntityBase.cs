@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// FIXME: タワーを纏めるGameObjectが存在しないから纏めた方が良い
 public abstract class TowerEntityBase : GameEntityBase
 {
     // タワーの情報

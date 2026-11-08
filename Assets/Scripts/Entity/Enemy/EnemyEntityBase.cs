@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
@@ -21,10 +22,10 @@ public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
     }
 
     // ゴールを達成した時
-    public event Action<int> OnGoalAchieved;
+    public event Action<int> GoalAchieved;
 
     // 敵が撃破された時
-    public event Action<DropItemBaseMaster[]> OnDefeated;
+    public event Action<DropItemBaseMaster[]> Defeated;
 
     // 一時停止する用クラス
     private readonly static WaitForSeconds _waitForSeconds = new(0.1f);
@@ -62,7 +63,7 @@ public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
         // HPが0以下なら自身を破棄する
         if(_hitPoint <= 0)
         {
-            OnDefeated?.Invoke(_enemyMaster.drops);
+            Defeated?.Invoke(_enemyMaster.drops);
             Destroy(gameObject);
             return;
         }
@@ -121,15 +122,20 @@ public abstract class EnemyEntityBase : GameEntityBase, IBulletDamage
                 // 現在の進行方向を保存
                 _previousDirection = _directions[i];
                 // 現在の進行方向から順番になるように順番を更新
-                // FIXME: ToArray関数の毎フレームの実行はメモリのゴミが残るらしいので要修正
-                _directions = _directions[i..].Concat(_directions[..i]).ToArray();
+                Vector2Int[] nextDirections = new Vector2Int[_directions.Length];
+                // 衝突判定した進行方向以降の進行方向を先頭からコピーする
+                Array.Copy(_directions, i, nextDirections, 0, _directions.Length - i);
+                // 元の先頭の配列から衝突判定した進行方向の前までを後尾にコピーする
+                Array.Copy(_directions, 0, nextDirections, _directions.Length - i, i);
+                // 現在の進行方向を上書きする
+                _directions = nextDirections;
                 break;
             }
         }
         // 身動きが取れない場合、進行不可の為自身を破棄する
         if(gameObjectNowPos == transform.position)
         {
-            OnGoalAchieved?.Invoke(_enemyMaster.attack);
+            GoalAchieved?.Invoke(_enemyMaster.attack);
             Destroy(gameObject);
         }
     }
