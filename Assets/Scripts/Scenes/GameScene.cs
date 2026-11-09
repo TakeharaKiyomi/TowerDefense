@@ -136,7 +136,7 @@ public class GameScene : MonoBehaviour
             placeTowerButton.transform.SetParent(_canvas.transform, false);
             // 表示位置を設定する
             RectTransform rect = placeTowerButton.GetComponent<RectTransform>();
-            placeTowerButton.transform.position += new Vector3(addPlaceTowerButtonPosX, 0.0f, 0.0f);
+            rect.anchoredPosition += new Vector2(addPlaceTowerButtonPosX, 0.0f);
             addPlaceTowerButtonPosX += rect.rect.width;
         }
         // スタートボタンを押下
