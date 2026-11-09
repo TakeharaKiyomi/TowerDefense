@@ -62,7 +62,7 @@ public class FieldManager : MonoBehaviour {
         {
             for(int j = 0; j < FieldMaster.Width; j++)
             {
-                FieldGridEntityType type = fieldMaster.cells[(i * FieldMaster.Width) + j];
+                FieldGridEntityType type = fieldMaster.grids[(i * FieldMaster.Width) + j];
                 // フィールド単一をインスタンス生成する
                 FieldGrid fieldGrid = FieldGrid.CreateEntity(type);
                 fieldGrid.transform.position = new Vector3(posX, posY, 0.0f);
