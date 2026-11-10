@@ -89,6 +89,8 @@ public class FieldManager : MonoBehaviour {
         {
             item.transform.position -= bounds.center;
         }
+        // 全フィールドの全体の幅を変更する
+        _fieldContainer.transform.localScale = new Vector3(0.75f, 0.75f, 1.0f);
     }
     
     /// <summary>
